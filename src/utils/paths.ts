@@ -3,6 +3,18 @@ import { resolve, normalize } from 'path';
 import { access, stat } from 'fs/promises';
 import { constants } from 'fs';
 
+export function expandTilde(p: string): string {
+  const trimmed = p.trim();
+  const home = homedir();
+  if (trimmed === '~') {
+    return home;
+  }
+  if (trimmed.startsWith('~/')) {
+    return home + trimmed.slice(1);
+  }
+  return trimmed;
+}
+
 export function homeDirRelative(p: string): string {
   const home = homedir();
   if (p === home || p.startsWith(home + '/')) {
@@ -23,7 +35,8 @@ export async function validateDirectory(dir: string): Promise<DirValidationResul
   }
 
   try {
-    const resolved = resolve(normalize(dir));
+    const expanded = expandTilde(dir);
+    const resolved = resolve(normalize(expanded));
     await access(resolved, constants.F_OK | constants.R_OK);
     const info = await stat(resolved);
     if (!info.isDirectory()) {

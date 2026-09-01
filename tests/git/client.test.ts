@@ -18,6 +18,8 @@ const { mockGit, mockSimpleGit } = vi.hoisted(() => {
     init: vi.fn().mockResolvedValue(undefined),
     add: vi.fn().mockResolvedValue(undefined),
     commit: vi.fn().mockResolvedValue(undefined),
+    addRemote: vi.fn().mockResolvedValue(undefined),
+    push: vi.fn().mockResolvedValue(undefined),
   };
 
   const simple = vi.fn(() => mock);
@@ -38,6 +40,9 @@ import {
   initRepository,
   stageFiles,
   createCommit,
+  setDefaultBranch,
+  addRemote,
+  pushToRemote,
 } from '../../src/git/client.js';
 
 describe('isGitInstalled', () => {
@@ -183,5 +188,35 @@ describe('createCommit', () => {
     mockGit.commit.mockResolvedValue(undefined);
     await createCommit('/some/dir', 'Initial commit');
     expect(mockGit.commit).toHaveBeenCalledWith('Initial commit');
+  });
+});
+
+describe('setDefaultBranch', () => {
+  it('calls git.raw to set branch to default main', async () => {
+    mockGit.raw.mockResolvedValue('');
+    await setDefaultBranch('/some/dir');
+    expect(mockGit.raw).toHaveBeenCalledWith(['branch', '-M', 'main']);
+  });
+
+  it('calls git.raw to set branch to custom branch name', async () => {
+    mockGit.raw.mockResolvedValue('');
+    await setDefaultBranch('/some/dir', 'master');
+    expect(mockGit.raw).toHaveBeenCalledWith(['branch', '-M', 'master']);
+  });
+});
+
+describe('addRemote', () => {
+  it('calls git.addRemote with name and URL', async () => {
+    mockGit.addRemote.mockResolvedValue(undefined);
+    await addRemote('/some/dir', 'origin', 'https://github.com/user/repo.git');
+    expect(mockGit.addRemote).toHaveBeenCalledWith('origin', 'https://github.com/user/repo.git');
+  });
+});
+
+describe('pushToRemote', () => {
+  it('calls git.push with -u, remote and branch', async () => {
+    mockGit.push.mockResolvedValue(undefined);
+    await pushToRemote('/some/dir', 'origin', 'main');
+    expect(mockGit.push).toHaveBeenCalledWith(['-u', 'origin', 'main']);
   });
 });

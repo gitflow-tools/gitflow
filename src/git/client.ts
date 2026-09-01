@@ -85,3 +85,22 @@ export async function createCommit(dir: string, message: string): Promise<void> 
   const git = createClient(dir);
   await git.commit(message);
 }
+
+export async function setDefaultBranch(dir: string, branch: string = 'main'): Promise<void> {
+  const git = createClient(dir);
+  await git.raw(['branch', '-M', branch]);
+}
+
+export async function addRemote(dir: string, name: string, url: string): Promise<void> {
+  const git = createClient(dir);
+  await git.addRemote(name, url);
+}
+
+export async function pushToRemote(
+  dir: string,
+  remote: string,
+  branch: string = 'main',
+): Promise<void> {
+  const git = createClient(dir);
+  await git.push(['-u', remote, branch]);
+}

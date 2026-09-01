@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://images.guns.lol/a67690a57b1298218a8bc834edbb5f30b77695b8/fEjf3P.png" alt="gitflow logo" width="120" />
+</p>
+
 # gitflow
 
 > A faster, guided way to work with Git.
@@ -16,46 +20,36 @@ Create and configure a Git repository through an interactive step-by-step wizard
 
 The setup process can handle:
 
-* Repository initialisation
-* Directory selection
-* README generation
-* `.gitignore` templates
-* Default branch configuration
-* Initial commits
-* Remote repository setup
-* Remote URL configuration
-* Pushing the initial branch
+- Repository initialisation
+- Directory selection
+- README generation
+- `.gitignore` templates
+- Default branch configuration
+- Initial commits
+- Remote repository setup
+- Remote URL configuration
+- Pushing the initial branch
 
 Example workflow:
 
 ```text
-Repository Setup
+Step 1/7 — Select Directory
+Current directory: ~/Projects
+Where would you like to initialise the repository?
+> Use current directory
+  Enter custom path
 
-Step 1/6
-
-Directory:
-
-> ~/Projects/my-project
-
-
-Step 2/6
-
+Step 2/7 — Repository Details
 Repository name:
-
 > my-project
 
-
-Step 3/6
-
+Step 3/7 — README
 Create a README?
-
 > Yes
+  No
 
-
-Step 4/6
-
+Step 4/7 — .gitignore
 Select a .gitignore template:
-
 > Node.js
   Python
   Rust
@@ -63,56 +57,67 @@ Select a .gitignore template:
   Java
   None
 
+Step 5/7 — Initial Commit
+Create an initial commit?
+> Yes
+  No
 
-Step 5/6
+Step 6/7 — Remote Repository
+Would you like to add a remote?
+> Yes
+  No
 
-Add a remote repository?
-
-> GitHub
-  GitLab
-  Custom
-  No remote
-
-
-Step 6/6
-
-Initial commit message:
-
-> Initial project setup
+Step 7/7 — Review and Execute
 ```
 
-Before executing the setup, gitflow displays a summary of the planned actions.
+Before executing the setup, gitflow displays a summary of the planned actions and commands:
 
 ```text
-Repository Plan
+Repository Setup Plan
 
-Directory
+Directory:
 ~/Projects/my-project
 
-Git
-✓ Initialise repository
-✓ Create main branch
+Repository:
+my-project
 
-Files
+Files:
 ✓ README.md
-✓ .gitignore
+✓ .gitignore (Node.js)
 
-Remote
+Git:
+✓ Initialise repository
+✓ Set default branch to main
+
+Commit:
+✓ Initial commit
+
+Message:
+Initial commit
+
+Remote:
 ✓ origin
+https://github.com/username/my-project.git
 
-Commit
-✓ Initial project setup
+Push:
+✓ Enabled
 
-Commands:
+────────────────────────────────────────────
 
-1. git init
-2. git add .
-3. git commit -m "Initial project setup"
+Commands and actions:
+1. Create README.md
+2. Create .gitignore (Node.js)
+3. git init
 4. git branch -M main
-5. git remote add origin <remote-url>
-6. git push -u origin main
+5. git add README.md .gitignore
+6. git commit -m "Initial commit"
+7. git remote add origin https://github.com/username/my-project.git
+8. git push -u origin main
+
+────────────────────────────────────────────
 
 > Execute Setup
+  Go Back
   Cancel
 ```
 
@@ -152,12 +157,12 @@ gitflow provides an interactive workflow for creating commits.
 
 Users can:
 
-* View modified files
-* Select files to stage
-* Stage all changes
-* Enter commit messages
-* Use conventional commit prefixes
-* Preview the final commit
+- View modified files
+- Select files to stage
+- Stage all changes
+- Enter commit messages
+- Use conventional commit prefixes
+- Preview the final commit
 
 Example:
 
@@ -192,12 +197,12 @@ Manage branches through an interactive interface.
 
 Features planned include:
 
-* Create branches
-* Switch branches
-* Rename branches
-* Delete branches
-* Merge branches
-* View branch information
+- Create branches
+- Switch branches
+- Rename branches
+- Delete branches
+- Merge branches
+- View branch information
 
 ## Git Recipes
 
@@ -299,13 +304,13 @@ Help users understand Git workflows by exposing the underlying commands and proc
 
 ## Tech Stack
 
-* TypeScript
-* Node.js
-* Ink
-* React
-* Git
-* simple-git
-* GitHub CLI or GitHub API
+- TypeScript
+- Node.js
+- Ink
+- React
+- Git
+- simple-git
+- GitHub CLI or GitHub API
 
 ## Installation
 
@@ -356,35 +361,48 @@ npm run dev
 ```text
 gitflow/
 ├── src/
-│   ├── index.ts
-│   │
-│   ├── commands/
-│   │   ├── init.ts
-│   │   ├── status.ts
-│   │   ├── commit.ts
-│   │   ├── branch.ts
-│   │   ├── remote.ts
-│   │   └── doctor.ts
-│   │
+│   ├── cli/
+│   │   └── index.ts
 │   ├── git/
 │   │   ├── client.ts
+│   │   ├── remote.ts
 │   │   ├── repository.ts
-│   │   └── parser.ts
-│   │
+│   │   └── types.ts
+│   ├── setup/
+│   │   ├── executor.ts
+│   │   ├── plan.ts
+│   │   ├── types.ts
+│   │   └── validation.ts
+│   ├── templates/
+│   │   ├── gitignore.ts
+│   │   └── readme.ts
 │   ├── ui/
-│   │   ├── app.tsx
-│   │   ├── menu.tsx
-│   │   ├── wizard.tsx
-│   │   └── components/
-│   │
-│   ├── services/
-│   │   ├── github.ts
-│   │   └── config.ts
-│   │
+│   │   ├── App.tsx
+│   │   ├── components/
+│   │   │   ├── CommandPreview.tsx
+│   │   │   ├── ConfirmDialog.tsx
+│   │   │   ├── ErrorDisplay.tsx
+│   │   │   ├── Header.tsx
+│   │   │   ├── Menu.tsx
+│   │   │   ├── ProgressIndicator.tsx
+│   │   │   └── StatusBadge.tsx
+│   │   └── screens/
+│   │       ├── MainMenu.tsx
+│   │       ├── RepositoryStatus.tsx
+│   │       ├── InitWizard.tsx
+│   │       └── setup/
+│   │           ├── SetupWizard.tsx
+│   │           ├── DirectoryStep.tsx
+│   │           ├── RepositoryDetailsStep.tsx
+│   │           ├── ReadmeStep.tsx
+│   │           ├── GitignoreStep.tsx
+│   │           ├── CommitStep.tsx
+│   │           ├── RemoteStep.tsx
+│   │           ├── ReviewStep.tsx
+│   │           └── ExecutionStep.tsx
 │   └── utils/
-│       ├── logger.ts
-│       └── validation.ts
-│
+│       ├── errors.ts
+│       └── paths.ts
 ├── tests/
 ├── README.md
 ├── package.json
@@ -395,54 +413,54 @@ gitflow/
 
 ### v0.1.0
 
-* [ ] Basic terminal user interface
-* [ ] Git installation detection
-* [ ] Repository detection
-* [ ] Repository status
-* [ ] Repository initialisation
+- [x] Basic TUI
+- [x] Git detection
+- [x] Repository detection
+- [x] Repository status
+- [x] Repository initialisation
 
 ### v0.2.0
 
-* [ ] Guided repository setup
-* [ ] Directory selection
-* [ ] README generation
-* [ ] `.gitignore` templates
-* [ ] Initial commit workflow
-* [ ] Remote configuration
-* [ ] Command previews
+- [x] Guided repository setup
+- [x] Directory selection
+- [x] README generation
+- [x] `.gitignore` templates
+- [x] Initial commit workflow
+- [x] Remote configuration
+- [x] Command previews
 
 ### v0.3.0
 
-* [ ] File staging
-* [ ] Commit assistant
-* [ ] Conventional commit support
-* [ ] Push workflow
-* [ ] Pull workflow
+- [ ] File staging
+- [ ] Commit assistant
+- [ ] Conventional commit support
+- [ ] Push workflow
+- [ ] Pull workflow
 
 ### v0.4.0
 
-* [ ] Branch creation
-* [ ] Branch switching
-* [ ] Branch deletion
-* [ ] Branch merging
-* [ ] Branch information
+- [ ] Branch creation
+- [ ] Branch switching
+- [ ] Branch deletion
+- [ ] Branch merging
+- [ ] Branch information
 
 ### v0.5.0
 
-* [ ] Git recipes
-* [ ] Repository Doctor
-* [ ] Configuration system
-* [ ] Themes
+- [ ] Git recipes
+- [ ] Repository Doctor
+- [ ] Configuration system
+- [ ] Themes
 
 ### v1.0.0
 
-* [ ] GitHub integration
-* [ ] Repository creation
-* [ ] GitHub authentication
-* [ ] Automated remote setup
-* [ ] Release binaries
-* [ ] Documentation
-* [ ] Full test coverage
+- [ ] GitHub integration
+- [ ] Repository creation
+- [ ] GitHub authentication
+- [ ] Automated remote setup
+- [ ] Release binaries
+- [ ] Documentation
+- [ ] Full test coverage
 
 ## Why gitflow?
 

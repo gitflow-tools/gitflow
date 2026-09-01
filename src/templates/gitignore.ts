@@ -1,3 +1,7 @@
+import { access } from 'fs/promises';
+import { constants } from 'fs';
+import { join } from 'path';
+
 export type GitignoreTemplate = 'nodejs' | 'python' | 'rust' | 'go' | 'java' | 'none';
 
 export const GITIGNORE_TEMPLATE_LABELS: Record<GitignoreTemplate, string> = {
@@ -205,4 +209,13 @@ export const GITIGNORE_TEMPLATES: Record<Exclude<GitignoreTemplate, 'none'>, str
 export function getGitignoreContent(template: GitignoreTemplate): string | null {
   if (template === 'none') return null;
   return GITIGNORE_TEMPLATES[template];
+}
+
+export async function detectExistingGitignore(dir: string): Promise<boolean> {
+  try {
+    await access(join(dir, '.gitignore'), constants.F_OK);
+    return true;
+  } catch {
+    return false;
+  }
 }

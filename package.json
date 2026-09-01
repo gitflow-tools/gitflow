@@ -1,6 +1,6 @@
 {
   "name": "gitflow",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "An interactive terminal UI that simplifies and accelerates common Git workflows through guided actions, repository setup wizards, and command previews.",
   "type": "module",
   "bin": {
