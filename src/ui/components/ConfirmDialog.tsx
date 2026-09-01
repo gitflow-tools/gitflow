@@ -37,7 +37,12 @@ export function ConfirmDialog({
         {message}
       </Text>
       {detail != null && <Text dimColor>{detail}</Text>}
-      <Menu items={CONFIRM_ITEMS} onSelect={handleSelect} isFocused={isFocused} />
+      <Menu
+        items={CONFIRM_ITEMS}
+        onSelect={handleSelect}
+        onCancel={onCancel}
+        isFocused={isFocused}
+      />
     </Box>
   );
 }

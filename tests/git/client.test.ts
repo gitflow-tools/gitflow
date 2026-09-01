@@ -20,6 +20,12 @@ const { mockGit, mockSimpleGit } = vi.hoisted(() => {
     commit: vi.fn().mockResolvedValue(undefined),
     addRemote: vi.fn().mockResolvedValue(undefined),
     push: vi.fn().mockResolvedValue(undefined),
+    pull: vi.fn().mockResolvedValue({
+      files: [],
+      insertions: {},
+      deletions: {},
+      summary: { changes: 0 },
+    }),
   };
 
   const simple = vi.fn(() => mock);
@@ -218,5 +224,112 @@ describe('pushToRemote', () => {
     mockGit.push.mockResolvedValue(undefined);
     await pushToRemote('/some/dir', 'origin', 'main');
     expect(mockGit.push).toHaveBeenCalledWith(['-u', 'origin', 'main']);
+  });
+});
+
+describe('stageAll & unstageAll', () => {
+  it('stageAll calls git.add with -A', async () => {
+    const { stageAll } = await import('../../src/git/client.js');
+    mockGit.add.mockResolvedValue(undefined);
+    await stageAll('/some/dir');
+    expect(mockGit.add).toHaveBeenCalledWith(['-A']);
+  });
+
+  it('unstageFiles calls git.raw restore --staged', async () => {
+    const { unstageFiles } = await import('../../src/git/client.js');
+    mockGit.raw.mockResolvedValue('');
+    await unstageFiles('/some/dir', ['file1.ts', 'file2.ts']);
+    expect(mockGit.raw).toHaveBeenCalledWith(['restore', '--staged', '--', 'file1.ts', 'file2.ts']);
+  });
+
+  it('unstageAll calls git.raw restore --staged .', async () => {
+    const { unstageAll } = await import('../../src/git/client.js');
+    mockGit.raw.mockResolvedValue('');
+    await unstageAll('/some/dir');
+    expect(mockGit.raw).toHaveBeenCalledWith(['restore', '--staged', '.']);
+  });
+});
+
+describe('getFileDiff', () => {
+  it('returns diff for unstaged file', async () => {
+    const { getFileDiff } = await import('../../src/git/client.js');
+    mockGit.status.mockResolvedValue({ not_added: [] });
+    mockGit.raw.mockResolvedValue('+new line\n-old line');
+    const res = await getFileDiff('/some/dir', 'test.ts', false);
+    expect(res.diff).toBe('+new line\n-old line');
+    expect(res.isUntracked).toBe(false);
+  });
+
+  it('returns diff for staged file', async () => {
+    const { getFileDiff } = await import('../../src/git/client.js');
+    mockGit.status.mockResolvedValue({ not_added: [] });
+    mockGit.raw.mockResolvedValue('+staged line');
+    const res = await getFileDiff('/some/dir', 'test.ts', true);
+    expect(mockGit.raw).toHaveBeenCalledWith(['diff', '--staged', '--', 'test.ts']);
+    expect(res.diff).toBe('+staged line');
+  });
+
+  it('detects untracked file and returns isUntracked: true', async () => {
+    const { getFileDiff } = await import('../../src/git/client.js');
+    mockGit.status.mockResolvedValue({ not_added: ['untracked.ts'] });
+    const res = await getFileDiff('/some/dir', 'untracked.ts', false);
+    expect(res.isUntracked).toBe(true);
+    expect(res.diff).toBe('');
+  });
+});
+
+describe('getUpstream & getAheadBehind', () => {
+  it('parses remote and branch from rev-parse @{u}', async () => {
+    const { getUpstream } = await import('../../src/git/client.js');
+    mockGit.raw.mockResolvedValue('origin/feature-x\n');
+    const upstream = await getUpstream('/some/dir');
+    expect(upstream).toEqual({ remote: 'origin', branch: 'feature-x' });
+  });
+
+  it('returns null when upstream rev-parse throws', async () => {
+    const { getUpstream } = await import('../../src/git/client.js');
+    mockGit.raw.mockRejectedValue(new Error('no upstream configured'));
+    const upstream = await getUpstream('/some/dir');
+    expect(upstream).toBeNull();
+  });
+
+  it('parses ahead and behind count correctly', async () => {
+    const { getAheadBehind } = await import('../../src/git/client.js');
+    mockGit.raw.mockResolvedValue('3\t1\n');
+    const counts = await getAheadBehind('/some/dir', 'main', 'origin/main');
+    expect(counts).toEqual({ ahead: 3, behind: 1 });
+  });
+});
+
+describe('push & pull client wrappers', () => {
+  it('pushes with setUpstream flag when true', async () => {
+    const { push } = await import('../../src/git/client.js');
+    mockGit.push.mockResolvedValue(undefined);
+    const res = await push('/some/dir', { remote: 'origin', branch: 'main', setUpstream: true });
+    expect(res.success).toBe(true);
+    expect(mockGit.push).toHaveBeenCalledWith(['-u', 'origin', 'main']);
+  });
+
+  it('pushes without -u when setUpstream is false', async () => {
+    const { push } = await import('../../src/git/client.js');
+    mockGit.push.mockResolvedValue(undefined);
+    const res = await push('/some/dir', { remote: 'origin', branch: 'main', setUpstream: false });
+    expect(res.success).toBe(true);
+    expect(mockGit.push).toHaveBeenCalledWith(['origin', 'main']);
+  });
+
+  it('pulls and parses pull result', async () => {
+    const { pull } = await import('../../src/git/client.js');
+    mockGit.pull.mockResolvedValue({
+      files: ['a.txt', 'b.txt'],
+      insertions: { changes: 10 },
+      deletions: { changes: 2 },
+      summary: { changes: 2 },
+    });
+    const res = await pull('/some/dir', { remote: 'origin', branch: 'main' });
+    expect(res.filesChanged).toBe(2);
+    expect(res.insertions).toBe(10);
+    expect(res.deletions).toBe(2);
+    expect(res.alreadyUpToDate).toBe(false);
   });
 });

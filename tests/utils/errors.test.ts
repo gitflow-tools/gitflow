@@ -104,3 +104,61 @@ describe('isGitIdentityError', () => {
     expect(isGitIdentityError(42)).toBe(false);
   });
 });
+
+describe('toGitflowError', () => {
+  it('detects git identity errors and formats suggestion', async () => {
+    const { toGitflowError } = await import('../../src/utils/errors.js');
+    const result = toGitflowError(new Error('Please tell me who you are: user.email missing'));
+    expect(result.title).toBe('Git Identity Not Configured');
+    expect(result.suggestion).toContain('git config --global user.name');
+    expect(result.suggestion).toContain('git config --global user.email');
+  });
+
+  it('detects authentication failures', async () => {
+    const { toGitflowError } = await import('../../src/utils/errors.js');
+    const result = toGitflowError(new Error('fatal: Authentication failed for remote'));
+    expect(result.title).toBe('Authentication Failed');
+    expect(result.suggestion).toContain('credential manager');
+  });
+
+  it('detects rejected push requiring pull', async () => {
+    const { toGitflowError } = await import('../../src/utils/errors.js');
+    const result = toGitflowError(new Error('error: failed to push some refs: fetch first'));
+    expect(result.title).toBe('Rejected Push');
+    expect(result.suggestion).toContain('Pull the latest changes');
+  });
+
+  it('detects merge conflicts', async () => {
+    const { toGitflowError } = await import('../../src/utils/errors.js');
+    const result = toGitflowError(
+      new Error('Automatic merge failed; fix conflicts and then commit the result.'),
+    );
+    expect(result.title).toBe('Merge Conflict Detected');
+    expect(result.suggestion).toContain('Resolve the conflicts manually');
+  });
+
+  it('detects local changes overwriting error on pull', async () => {
+    const { toGitflowError } = await import('../../src/utils/errors.js');
+    const result = toGitflowError(
+      new Error('error: Your local changes to the following files would be overwritten by merge'),
+    );
+    expect(result.title).toBe('Local Changes Conflict');
+    expect(result.suggestion).toContain('Stage or commit your changes');
+  });
+
+  it('detects missing upstream branch', async () => {
+    const { toGitflowError } = await import('../../src/utils/errors.js');
+    const result = toGitflowError(
+      new Error('fatal: The current branch main has no upstream branch.'),
+    );
+    expect(result.title).toBe('No Upstream Branch');
+    expect(result.suggestion).toContain('Push with -u');
+  });
+
+  it('falls back to generic error format for other errors', async () => {
+    const { toGitflowError } = await import('../../src/utils/errors.js');
+    const result = toGitflowError(new Error('something unknown happened'), 'Custom Title');
+    expect(result.title).toBe('Custom Title');
+    expect(result.message).toBe('something unknown happened');
+  });
+});

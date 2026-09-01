@@ -121,6 +121,22 @@ Commands and actions:
   Cancel
 ```
 
+### Interactive staging
+
+Select and stage individual files or manage all changes at once.
+
+### Commit assistant
+
+Create commits through a guided workflow with previews before execution.
+
+### Conventional commits
+
+Generate structured Conventional Commit messages through an interactive assistant.
+
+### Push and pull workflows
+
+Synchronise repositories through guided push and pull workflows with safety checks.
+
 ## Repository Dashboard
 
 When gitflow is opened inside an existing repository, it provides an overview of the current repository state.
@@ -129,66 +145,29 @@ When gitflow is opened inside an existing repository, it provides an overview of
 Repository: gitflow
 
 Branch
-main
+main (tracking origin/main)
 
-Changes
-3 modified
-2 untracked
+Working Tree
+3 changes
 
-Remote
-origin
+Staged:
+  M  src/index.ts
 
-Last Commit
-feat: add repository setup wizard
+Modified:
+  M  README.md
+
+Untracked:
+  ?  src/utils/logger.ts
 
 What would you like to do?
 
-> View Changes
-  Commit Changes
-  Push Changes
-  Pull Changes
-  Branch Management
-  Remote Management
-```
-
-## Commit Assistant
-
-gitflow provides an interactive workflow for creating commits.
-
-Users can:
-
-- View modified files
-- Select files to stage
-- Stage all changes
-- Enter commit messages
-- Use conventional commit prefixes
-- Preview the final commit
-
-Example:
-
-```text
-Changed Files
-
-> src/git/init.ts
-  src/ui/menu.ts
-  README.md
-
-Commit Type
-
-> feat
-  fix
-  docs
-  refactor
-  test
-  chore
-
-Description:
-
-> add repository setup wizard
-
-Commit Preview:
-
-feat: add repository setup wizard
+> Status
+  Stage Changes
+  Commit
+  Push
+  Pull
+  Repository Setup
+  Exit
 ```
 
 ## Branch Management
@@ -340,7 +319,7 @@ gitflow
 Clone the repository:
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/gitflow.git
+git clone https://github.com/gitflow-tools/gitflow.git
 cd gitflow
 ```
 
@@ -363,6 +342,8 @@ gitflow/
 ├── src/
 │   ├── cli/
 │   │   └── index.ts
+│   ├── commit/
+│   │   └── conventional.ts
 │   ├── git/
 │   │   ├── client.ts
 │   │   ├── remote.ts
@@ -390,6 +371,16 @@ gitflow/
 │   │       ├── MainMenu.tsx
 │   │       ├── RepositoryStatus.tsx
 │   │       ├── InitWizard.tsx
+│   │       ├── staging/
+│   │       │   ├── StagingScreen.tsx
+│   │       │   ├── FileSelector.tsx
+│   │       │   └── DiffViewer.tsx
+│   │       ├── commit/
+│   │       │   └── CommitScreen.tsx
+│   │       ├── push/
+│   │       │   └── PushScreen.tsx
+│   │       ├── pull/
+│   │       │   └── PullScreen.tsx
 │   │       └── setup/
 │   │           ├── SetupWizard.tsx
 │   │           ├── DirectoryStep.tsx
@@ -431,11 +422,11 @@ gitflow/
 
 ### v0.3.0
 
-- [ ] File staging
-- [ ] Commit assistant
-- [ ] Conventional commit support
-- [ ] Push workflow
-- [ ] Pull workflow
+- [x] File staging
+- [x] Commit assistant
+- [x] Conventional commit support
+- [x] Push workflow
+- [x] Pull workflow
 
 ### v0.4.0
 

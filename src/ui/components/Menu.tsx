@@ -11,10 +11,16 @@ export interface MenuItem {
 interface MenuProps {
   items: ReadonlyArray<MenuItem>;
   onSelect: (item: MenuItem) => void;
+  onCancel?: () => void;
   isFocused?: boolean;
 }
 
-export function Menu({ items, onSelect, isFocused = true }: MenuProps): React.ReactElement {
+export function Menu({
+  items,
+  onSelect,
+  onCancel,
+  isFocused = true,
+}: MenuProps): React.ReactElement {
   const enabledIndices = items.reduce<number[]>((acc, item, index) => {
     if (item.disabled !== true) acc.push(index);
     return acc;
@@ -25,6 +31,20 @@ export function Menu({ items, onSelect, isFocused = true }: MenuProps): React.Re
 
   useInput(
     (_input, key) => {
+      if (
+        key.escape ||
+        _input === 'q' ||
+        _input === 'Q' ||
+        _input === '\u001b' ||
+        _input === '\x1b' ||
+        (_input != null && _input.charCodeAt(0) === 27)
+      ) {
+        if (onCancel) {
+          onCancel();
+          return;
+        }
+      }
+
       if (key.upArrow) {
         setSelectedIndex(prev => {
           const pos = enabledIndices.indexOf(prev);

@@ -3,11 +3,15 @@ import { Box, Text } from 'ink';
 import { MainMenu } from './screens/MainMenu.js';
 import { RepositoryStatus } from './screens/RepositoryStatus.js';
 import { InitWizard } from './screens/InitWizard.js';
+import { StagingScreen } from './screens/staging/StagingScreen.js';
+import { CommitScreen } from './screens/commit/CommitScreen.js';
+import { PushScreen } from './screens/push/PushScreen.js';
+import { PullScreen } from './screens/pull/PullScreen.js';
 import { detectRepository, getRepoStatus } from '../git/repository.js';
 import type { RepoInfo } from '../git/types.js';
 import type { MenuAction } from './screens/MainMenu.js';
 
-type AppScreen = 'menu' | 'status' | 'initWizard';
+type AppScreen = 'menu' | 'status' | 'staging' | 'commit' | 'push' | 'pull' | 'initWizard';
 
 interface AppProps {
   cwd: string;
@@ -45,6 +49,10 @@ export function App({
 
   const handleNavigate = useCallback((action: MenuAction): void => {
     if (action === 'status') setScreen('status');
+    if (action === 'staging') setScreen('staging');
+    if (action === 'commit') setScreen('commit');
+    if (action === 'push') setScreen('push');
+    if (action === 'pull') setScreen('pull');
     if (action === 'init') setScreen('initWizard');
   }, []);
 
@@ -58,7 +66,7 @@ export function App({
     });
   }, [refreshRepoState]);
 
-  if (isRefreshing) {
+  if (isRefreshing && screen === 'menu') {
     return (
       <Box paddingX={1}>
         <Text dimColor>Refreshing repository state...</Text>
@@ -75,6 +83,83 @@ export function App({
       );
     }
     return <RepositoryStatus repoInfo={repoInfo} onBack={handleBack} />;
+  }
+
+  if (screen === 'staging') {
+    if (repoInfo == null) {
+      return (
+        <Box paddingX={1}>
+          <Text color="red">Repository information unavailable.</Text>
+        </Box>
+      );
+    }
+    return (
+      <StagingScreen
+        cwd={cwd}
+        repoInfo={repoInfo}
+        onRefresh={refreshRepoState}
+        onBack={handleBack}
+      />
+    );
+  }
+
+  if (screen === 'commit') {
+    if (repoInfo == null) {
+      return (
+        <Box paddingX={1}>
+          <Text color="red">Repository information unavailable.</Text>
+        </Box>
+      );
+    }
+    return (
+      <CommitScreen
+        cwd={cwd}
+        repoInfo={repoInfo}
+        onRefresh={refreshRepoState}
+        onBack={handleBack}
+        onGoToStaging={() => setScreen('staging')}
+        onViewStatus={() => setScreen('status')}
+        onPushChanges={() => setScreen('push')}
+      />
+    );
+  }
+
+  if (screen === 'push') {
+    if (repoInfo == null) {
+      return (
+        <Box paddingX={1}>
+          <Text color="red">Repository information unavailable.</Text>
+        </Box>
+      );
+    }
+    return (
+      <PushScreen
+        cwd={cwd}
+        repoInfo={repoInfo}
+        onRefresh={refreshRepoState}
+        onBack={handleBack}
+        onGoToPull={() => setScreen('pull')}
+      />
+    );
+  }
+
+  if (screen === 'pull') {
+    if (repoInfo == null) {
+      return (
+        <Box paddingX={1}>
+          <Text color="red">Repository information unavailable.</Text>
+        </Box>
+      );
+    }
+    return (
+      <PullScreen
+        cwd={cwd}
+        repoInfo={repoInfo}
+        onRefresh={refreshRepoState}
+        onBack={handleBack}
+        onGoToStaging={() => setScreen('staging')}
+      />
+    );
   }
 
   if (screen === 'initWizard') {
