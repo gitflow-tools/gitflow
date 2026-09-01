@@ -1,21 +1,70 @@
-MIT License
+Gitflow Community License 1.0
 
-Copyright (c) 2026 gitflow contributors
+Copyright (c) 2026 Joshua Orpen
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permission is hereby granted to any person obtaining a copy of this software and associated documentation files (the "Software") to use, copy, study, modify, and redistribute the Software, subject to the following conditions.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. Attribution
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Any distribution of the Software or a modified version of the Software must retain the original copyright notice and this license.
+
+Modified versions must clearly state that they have been modified and must not imply that the original author endorses the modified version.
+
+2. Open Source Modifications
+
+Any distributed modified version, derivative work, or extension based substantially on the Software must make its corresponding source code publicly available under this license.
+
+The source code must be made available to users of the modified version without unreasonable restriction.
+
+3. Rebranding and Commercialisation
+
+The Software may not be represented as an original work created solely by another individual or organisation when it is substantially based on this Software.
+
+Any person or organisation wishing to:
+
+* commercialise the Software as a proprietary product;
+* distribute a closed-source derivative;
+* substantially rebrand the Software as their own product;
+* remove or obscure attribution to the original author;
+* incorporate substantial portions of the Software into a proprietary commercial product;
+
+must obtain prior written permission from the copyright holder.
+
+Permission requests may be sent to:
+
+[joshuaorpen@tutanota.de](mailto:joshuaorpen@tutanota.de)
+
+4. No Trademark Rights
+
+This license does not grant permission to use any trademarks, logos, branding, or project identity associated with Gitflow beyond what is reasonably necessary to identify the original Software.
+
+5. No Warranty
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, LOSSES, DATA LOSS, BUSINESS INTERRUPTION, OR OTHER LIABILITY ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+6. Limitation of Liability
+
+Users are solely responsible for reviewing commands, operations, and modifications performed using the Software.
+
+The Software may execute or assist with commands that modify repositories, files, branches, remotes, commits, or other data.
+
+The author accepts no responsibility for:
+
+* data loss;
+* repository corruption;
+* accidental deletion of files;
+* unintended Git operations;
+* loss of commits or branches;
+* incorrect configuration;
+* third-party service failures;
+* damages resulting from modifications to the Software.
+
+Use of the Software is entirely at the user's own risk.
+
+7. Acceptance
+
+By using, copying, modifying, or distributing the Software, you agree to the terms of this license.
+
+END OF TERMS

@@ -1,236 +1,459 @@
 # gitflow
 
-An interactive terminal UI that simplifies and accelerates common Git workflows through guided actions, repository setup wizards, and command previews.
+> A faster, guided way to work with Git.
 
-## Core Philosophy
+gitflow is an interactive terminal user interface designed to simplify and accelerate common Git workflows.
 
-gitflow makes common Git workflows faster without hiding Git itself. Every version is built around three principles:
+Instead of memorising long sequences of Git commands, gitflow guides users through common tasks such as initialising repositories, creating commits, managing branches, configuring remotes, and pushing projects to Git hosting platforms.
 
-1. **Fast** — reduce repetitive Git workflows
-2. **Transparent** — show users what commands or actions will be performed
-3. **Safe** — require confirmation before any repository-modifying operation
+gitflow is designed to improve Git workflows without hiding Git itself. Before actions are performed, users can preview the commands that will be executed.
 
-gitflow never silently performs Git operations.
+## Features
 
-## Features (v0.1.0)
+### Guided Repository Setup
 
-- ✅ Interactive terminal UI with keyboard navigation
-- ✅ Git installation detection on startup
-- ✅ Current working directory detection
-- ✅ Git repository detection
-- ✅ Repository status dashboard
-- ✅ Repository initialisation wizard (5-step guided flow)
-- ✅ README.md generation
-- ✅ `.gitignore` generation (Node.js, Python, Rust, Go, Java)
-- ✅ Initial commit creation
-- ✅ Action preview and confirmation before modifying repositories
-- ✅ Overwrite protection for existing files
-- ✅ Git identity error detection with helpful setup instructions
-- ✅ Clear error messages for all failure cases
+Create and configure a Git repository through an interactive step-by-step wizard.
 
-## Screenshots
+The setup process can handle:
 
-> _Screenshots coming soon._
+* Repository initialisation
+* Directory selection
+* README generation
+* `.gitignore` templates
+* Default branch configuration
+* Initial commits
+* Remote repository setup
+* Remote URL configuration
+* Pushing the initial branch
+
+Example workflow:
+
+```text
+Repository Setup
+
+Step 1/6
+
+Directory:
+
+> ~/Projects/my-project
+
+
+Step 2/6
+
+Repository name:
+
+> my-project
+
+
+Step 3/6
+
+Create a README?
+
+> Yes
+
+
+Step 4/6
+
+Select a .gitignore template:
+
+> Node.js
+  Python
+  Rust
+  Go
+  Java
+  None
+
+
+Step 5/6
+
+Add a remote repository?
+
+> GitHub
+  GitLab
+  Custom
+  No remote
+
+
+Step 6/6
+
+Initial commit message:
+
+> Initial project setup
+```
+
+Before executing the setup, gitflow displays a summary of the planned actions.
+
+```text
+Repository Plan
+
+Directory
+~/Projects/my-project
+
+Git
+✓ Initialise repository
+✓ Create main branch
+
+Files
+✓ README.md
+✓ .gitignore
+
+Remote
+✓ origin
+
+Commit
+✓ Initial project setup
+
+Commands:
+
+1. git init
+2. git add .
+3. git commit -m "Initial project setup"
+4. git branch -M main
+5. git remote add origin <remote-url>
+6. git push -u origin main
+
+> Execute Setup
+  Cancel
+```
+
+## Repository Dashboard
+
+When gitflow is opened inside an existing repository, it provides an overview of the current repository state.
+
+```text
+Repository: gitflow
+
+Branch
+main
+
+Changes
+3 modified
+2 untracked
+
+Remote
+origin
+
+Last Commit
+feat: add repository setup wizard
+
+What would you like to do?
+
+> View Changes
+  Commit Changes
+  Push Changes
+  Pull Changes
+  Branch Management
+  Remote Management
+```
+
+## Commit Assistant
+
+gitflow provides an interactive workflow for creating commits.
+
+Users can:
+
+* View modified files
+* Select files to stage
+* Stage all changes
+* Enter commit messages
+* Use conventional commit prefixes
+* Preview the final commit
+
+Example:
+
+```text
+Changed Files
+
+> src/git/init.ts
+  src/ui/menu.ts
+  README.md
+
+Commit Type
+
+> feat
+  fix
+  docs
+  refactor
+  test
+  chore
+
+Description:
+
+> add repository setup wizard
+
+Commit Preview:
+
+feat: add repository setup wizard
+```
+
+## Branch Management
+
+Manage branches through an interactive interface.
+
+Features planned include:
+
+* Create branches
+* Switch branches
+* Rename branches
+* Delete branches
+* Merge branches
+* View branch information
+
+## Git Recipes
+
+Git recipes allow users to select what they want to achieve instead of remembering the exact Git commands required.
+
+Examples:
+
+```text
+What would you like to do?
+
+> Start a new project
+  Upload an existing project to GitHub
+  Create a feature branch
+  Commit changes
+  Save work temporarily
+  Undo my last commit
+  Update my branch
+  Resolve a merge conflict
+```
+
+gitflow then guides the user through the required steps.
+
+## Command Preview
+
+gitflow is designed to remain transparent.
+
+Before commands are executed, users can preview exactly what will happen.
+
+```text
+Commands to execute:
+
+1. git init
+2. git add .
+3. git commit -m "Initial commit"
+4. git branch -M main
+5. git remote add origin <url>
+6. git push -u origin main
+
+> Execute
+  Copy Commands
+  Cancel
+```
+
+This allows users to learn Git while using gitflow.
+
+## Repository Doctor
+
+A planned repository health checker that analyses common Git configuration issues.
+
+Example:
+
+```text
+gitflow doctor
+
+Repository
+✓ Valid Git repository
+
+Remote
+✓ Origin configured
+✓ Remote reachable
+
+Branch
+✓ Tracking remote branch
+
+Working Tree
+Warning: 12 uncommitted changes
+
+Large Files
+Warning: node_modules detected
+✓ .gitignore configured
+
+Git Configuration
+✓ User name configured
+✓ User email configured
+
+Recommended Actions
+
+1. Commit or stash current changes
+2. Add node_modules to .gitignore
+```
+
+## Principles
+
+### Fast
+
+Reduce repetitive Git workflows into guided actions.
+
+### Transparent
+
+Show the commands being executed instead of hiding Git behind abstractions.
+
+### Safe
+
+Warn users before destructive operations and clearly explain potential consequences.
+
+### Educational
+
+Help users understand Git workflows by exposing the underlying commands and processes.
+
+## Tech Stack
+
+* TypeScript
+* Node.js
+* Ink
+* React
+* Git
+* simple-git
+* GitHub CLI or GitHub API
 
 ## Installation
 
-### Prerequisites
-
-- **Node.js** 20 or later
-- **Git** installed and available in your PATH
-
-### Global install (once published to npm)
+Installation instructions will be added once the first release is available.
 
 ```bash
 npm install -g gitflow
-gitflow
 ```
-
-### From source
-
-```bash
-git clone https://github.com/yourname/gitflow.git
-cd gitflow
-npm install
-npm run build
-npm link
-gitflow
-```
-
-## Development Setup
-
-```bash
-git clone https://github.com/yourname/gitflow.git
-cd gitflow
-npm install
-```
-
-### Available scripts
-
-| Command                | Description                               |
-| ---------------------- | ----------------------------------------- |
-| `npm run dev`          | Run in development mode (no build needed) |
-| `npm run build`        | Compile TypeScript to `dist/`             |
-| `npm run typecheck`    | Type-check without emitting files         |
-| `npm run lint`         | Run ESLint                                |
-| `npm run lint:fix`     | Run ESLint and auto-fix issues            |
-| `npm run format`       | Format with Prettier                      |
-| `npm run format:check` | Check formatting without writing          |
-| `npm run test`         | Run the test suite once                   |
-| `npm run test:watch`   | Run tests in watch mode                   |
 
 ## Usage
 
-### Start the application
+Start gitflow:
 
 ```bash
 gitflow
 ```
 
-or during development:
+Run gitflow inside an existing repository:
+
+```bash
+cd my-project
+gitflow
+```
+
+## Development
+
+Clone the repository:
+
+```bash
+git clone https://github.com/YOUR-USERNAME/gitflow.git
+cd gitflow
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start the development environment:
 
 ```bash
 npm run dev
 ```
 
-### Main menu
-
-Use **↑ ↓** arrow keys to navigate and **Enter** to select.
-
-- **Initialise Repository** — Launch the 5-step setup wizard
-- **Repository Status** — View status of the current repository (only visible when inside a repo)
-- **Exit** — Quit the application
-
-### Repository Status
-
-Displays:
-
-- Repository root path
-- Current branch
-- Working tree state (clean/dirty)
-- Number of modified, untracked, and staged files
-- Configured remotes
-- Most recent commit hash and message
-
-Press **Escape** or **Q** to return to the main menu.
-
-### Initialisation Wizard
-
-A 5-step guided flow:
-
-1. **Directory** — Choose the directory to initialise (defaults to CWD)
-2. **Repository Name** — Used as the README title
-3. **README** — Optionally generate a `README.md`
-4. **.gitignore** — Choose a language template or skip
-5. **Commit Message** — Set the initial commit message (default: `Initial commit`)
-
-Before executing, gitflow shows a complete summary of planned actions. Nothing is modified until you explicitly select **Execute Setup**.
-
-If files already exist (`README.md` or `.gitignore`), gitflow asks for confirmation before overwriting them.
-
 ## Project Structure
 
-```
+```text
 gitflow/
 ├── src/
-│   ├── cli/
-│   │   └── index.ts          # Entry point, startup checks, Ink render
+│   ├── index.ts
+│   │
+│   ├── commands/
+│   │   ├── init.ts
+│   │   ├── status.ts
+│   │   ├── commit.ts
+│   │   ├── branch.ts
+│   │   ├── remote.ts
+│   │   └── doctor.ts
 │   │
 │   ├── git/
-│   │   ├── client.ts         # simple-git wrapper (all git operations)
-│   │   ├── repository.ts     # High-level repository operations
-│   │   └── types.ts          # Git domain types
+│   │   ├── client.ts
+│   │   ├── repository.ts
+│   │   └── parser.ts
 │   │
 │   ├── ui/
-│   │   ├── App.tsx           # Root component, screen routing
-│   │   │
-│   │   ├── screens/
-│   │   │   ├── MainMenu.tsx
-│   │   │   ├── RepositoryStatus.tsx
-│   │   │   └── InitWizard.tsx
-│   │   │
+│   │   ├── app.tsx
+│   │   ├── menu.tsx
+│   │   ├── wizard.tsx
 │   │   └── components/
-│   │       ├── Header.tsx
-│   │       ├── Menu.tsx
-│   │       ├── ConfirmDialog.tsx
-│   │       ├── ErrorDisplay.tsx
-│   │       └── StatusBadge.tsx
 │   │
-│   ├── templates/
-│   │   └── gitignore.ts      # Language gitignore templates (static strings)
+│   ├── services/
+│   │   ├── github.ts
+│   │   └── config.ts
 │   │
 │   └── utils/
-│       ├── paths.ts          # Path helpers
-│       └── errors.ts         # Typed error classes
+│       ├── logger.ts
+│       └── validation.ts
 │
 ├── tests/
-│   ├── git/
-│   │   ├── client.test.ts
-│   │   └── repository.test.ts
-│   ├── templates/
-│   │   └── gitignore.test.ts
-│   └── utils/
-│       ├── paths.test.ts
-│       └── errors.test.ts
-│
 ├── README.md
-├── LICENSE
 ├── package.json
-├── tsconfig.json
-├── tsconfig.build.json
-├── eslint.config.js
-├── vitest.config.ts
-├── .prettierrc
-└── .gitignore
+└── tsconfig.json
 ```
-
-## Technology
-
-| Tool                                             | Purpose                                      |
-| ------------------------------------------------ | -------------------------------------------- |
-| [Ink](https://github.com/vadimdemedes/ink)       | Terminal UI rendering (React for CLIs)       |
-| [React](https://react.dev)                       | Component model                              |
-| [simple-git](https://github.com/steveukx/git-js) | Safe git operations (no shell interpolation) |
-| [TypeScript](https://typescriptlang.org)         | Strict type safety                           |
-| [Vitest](https://vitest.dev)                     | Testing                                      |
-| [ESLint](https://eslint.org)                     | Linting                                      |
-| [Prettier](https://prettier.io)                  | Formatting                                   |
-
-## Safety Philosophy
-
-gitflow treats your repository as precious.
-
-- **No silent operations**: Every action that modifies a repository is shown to the user before execution.
-- **Explicit confirmation**: The user must actively select "Execute Setup" — there is no auto-proceed.
-- **Overwrite protection**: Existing files (`README.md`, `.gitignore`) trigger a confirmation dialog.
-- **No shell interpolation**: All git operations use `simple-git`'s safe argument-array API. User input is never concatenated into shell strings.
-- **No destructive operations in v0.1.0**: The only operations are `git init`, `git add`, and `git commit`.
 
 ## Roadmap
 
+### v0.1.0
+
+* [ ] Basic terminal user interface
+* [ ] Git installation detection
+* [ ] Repository detection
+* [ ] Repository status
+* [ ] Repository initialisation
+
 ### v0.2.0
 
-- Branch management (create, switch, list)
-- Stage and unstage individual files
-- Stash management
+* [ ] Guided repository setup
+* [ ] Directory selection
+* [ ] README generation
+* [ ] `.gitignore` templates
+* [ ] Initial commit workflow
+* [ ] Remote configuration
+* [ ] Command previews
 
 ### v0.3.0
 
-- Commit history browser
-- Interactive staging (hunk selection)
-- Branch diff viewer
+* [ ] File staging
+* [ ] Commit assistant
+* [ ] Conventional commit support
+* [ ] Push workflow
+* [ ] Pull workflow
 
-### Future
+### v0.4.0
 
-- GitHub integration (PRs, issues)
-- Repository health diagnostics
-- Custom workflow templates
-- Plugin system
+* [ ] Branch creation
+* [ ] Branch switching
+* [ ] Branch deletion
+* [ ] Branch merging
+* [ ] Branch information
 
-## Contributing
+### v0.5.0
 
-Contributions are welcome. Please open an issue before submitting a PR for significant changes.
+* [ ] Git recipes
+* [ ] Repository Doctor
+* [ ] Configuration system
+* [ ] Themes
+
+### v1.0.0
+
+* [ ] GitHub integration
+* [ ] Repository creation
+* [ ] GitHub authentication
+* [ ] Automated remote setup
+* [ ] Release binaries
+* [ ] Documentation
+* [ ] Full test coverage
+
+## Why gitflow?
+
+Git is an extremely powerful tool, but common workflows often require remembering multiple commands, flags, and arguments.
+
+gitflow aims to reduce the friction involved in these workflows without replacing Git or hiding how Git works.
+
+The goal is simple:
+
+> Make common Git workflows faster while making Git easier to understand.
 
 ## License
 
-[MIT](LICENSE)
+Gitflow Community License V1.0
