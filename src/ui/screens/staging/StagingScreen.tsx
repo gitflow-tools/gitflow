@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { Box, Text } from 'ink';
+import { Panel } from '../../components/layout/Panel.js';
 import { Menu } from '../../components/Menu.js';
 import { ConfirmDialog } from '../../components/ConfirmDialog.js';
 import { ErrorDisplay } from '../../components/ErrorDisplay.js';
 import { FileSelector } from './FileSelector.js';
 import { DiffViewer } from './DiffViewer.js';
+import { ScreenHeader } from '../../components/ScreenHeader.js';
+import { CommandPanel } from '../../components/CommandPanel.js';
+import { colors } from '../../theme/colors.js';
 import {
   stageFiles,
   unstageFiles,
@@ -77,10 +81,7 @@ export function StagingScreen({
       value: 'diff',
       disabled: allChangedFiles.length === 0,
     },
-    {
-      label: 'Back',
-      value: 'back',
-    },
+    { label: 'Back', value: 'back' },
   ];
 
   const handleMenuSelect = (item: MenuItem): void => {
@@ -187,89 +188,86 @@ export function StagingScreen({
 
   if (isLoading) {
     return (
-      <Box paddingX={1}>
-        <Text dimColor>Updating repository...</Text>
-      </Box>
+      <Panel title="stage files" flexGrow={1} width="100%">
+        <Text color={colors.grey}>Updating repository state…</Text>
+      </Panel>
     );
   }
 
   if (view === 'error' && error) {
     return (
-      <Box flexDirection="column" gap={1}>
+      <Panel title="stage files" flexGrow={1} width="100%">
         <ErrorDisplay title={error.title} message={error.message} hint={error.suggestion} />
         <Box marginTop={1}>
-          <Text dimColor>Press Enter to continue</Text>
+          <Menu
+            items={[{ label: 'Return to staging menu', value: 'retry' }]}
+            onSelect={() => setView('menu')}
+            onCancel={() => setView('menu')}
+          />
         </Box>
-        <Menu
-          items={[{ label: 'Return to staging menu', value: 'retry' }]}
-          onSelect={() => setView('menu')}
-          onCancel={() => setView('menu')}
-        />
-      </Box>
+      </Panel>
     );
   }
 
   if (view === 'stageSelect') {
     return (
-      <FileSelector
-        title="Select files to stage"
-        files={workingTree.unstagedFiles}
-        onSubmit={paths => void handleStageFiles(paths)}
-        onCancel={() => setView('menu')}
-      />
+      <Panel title="stage files" flexGrow={1} width="100%">
+        <FileSelector
+          title="Select files to stage"
+          files={workingTree.unstagedFiles}
+          onSubmit={paths => void handleStageFiles(paths)}
+          onCancel={() => setView('menu')}
+        />
+      </Panel>
     );
   }
 
   if (view === 'unstageSelect') {
     return (
-      <FileSelector
-        title="Select files to unstage"
-        files={workingTree.stagedFiles}
-        onSubmit={paths => void handleUnstageFiles(paths)}
-        onCancel={() => setView('menu')}
-      />
+      <Panel title="stage files" flexGrow={1} width="100%">
+        <FileSelector
+          title="Select files to unstage"
+          files={workingTree.stagedFiles}
+          onSubmit={paths => void handleUnstageFiles(paths)}
+          onCancel={() => setView('menu')}
+        />
+      </Panel>
     );
   }
 
   if (view === 'confirmStageAll') {
     return (
-      <Box flexDirection="column" gap={1}>
-        <Text bold color="cyan">
-          Stage All Changes
-        </Text>
+      <Panel title="stage all" flexGrow={1} width="100%">
+        <ScreenHeader title="Stage All Changes" />
         <Text>
           This will stage all modified, deleted, and untracked files ({unstagedCount} files).
         </Text>
-        <Box flexDirection="column" marginY={1}>
-          <Text dimColor>Command to execute:</Text>
-          <Text color="cyan">git add -A</Text>
+        <Box marginY={1}>
+          <CommandPanel command="git add -A" />
         </Box>
         <ConfirmDialog
           message="Are you sure you want to stage all changes?"
           onConfirm={() => void handleStageAllConfirm()}
           onCancel={() => setView('menu')}
         />
-      </Box>
+      </Panel>
     );
   }
 
   if (view === 'confirmUnstageAll') {
     return (
-      <Box flexDirection="column" gap={1}>
-        <Text bold color="cyan">
-          Unstage All Changes
-        </Text>
+      <Panel title="unstage all" flexGrow={1} width="100%">
+        <ScreenHeader title="Unstage All Changes" />
         <Text>This will remove all files from staging ({stagedCount} files).</Text>
-        <Box flexDirection="column" marginY={1}>
-          <Text dimColor>Command to execute:</Text>
-          <Text color="cyan">git restore --staged .</Text>
+        <Box marginY={1}>
+          <CommandPanel command="git restore --staged ." />
         </Box>
         <ConfirmDialog
           message="Are you sure you want to unstage all changes?"
           onConfirm={() => void handleUnstageAllConfirm()}
           onCancel={() => setView('menu')}
         />
-      </Box>
+      </Panel>
     );
   }
 
@@ -281,10 +279,11 @@ export function StagingScreen({
     diffMenuItems.push({ label: 'Back', value: '__back__' });
 
     return (
-      <Box flexDirection="column" gap={1}>
-        <Text bold color="cyan">
-          Select a file to inspect diff:
-        </Text>
+      <Panel title="inspect diff" flexGrow={1} width="100%">
+        <ScreenHeader
+          title="Select a file to inspect"
+          subtitle={`${allChangedFiles.length} files`}
+        />
         <Menu
           items={diffMenuItems}
           onSelect={item => {
@@ -293,41 +292,39 @@ export function StagingScreen({
               return;
             }
             const found = allChangedFiles.find(f => f.path === item.value);
-            if (found) {
-              void handleInspectDiff(found);
-            }
+            if (found) void handleInspectDiff(found);
           }}
           onCancel={() => setView('menu')}
         />
-      </Box>
+      </Panel>
     );
   }
 
   if (view === 'viewDiff' && selectedFileForDiff && diffResult) {
     return (
-      <DiffViewer
-        filePath={selectedFileForDiff.path}
-        category={selectedFileForDiff.category}
-        diff={diffResult.diff}
-        truncated={diffResult.truncated}
-        isUntracked={diffResult.isUntracked}
-        totalLines={diffResult.totalLines}
-        onBack={() => setView('selectDiffFile')}
-      />
+      <Panel title="diff" flexGrow={1} width="100%">
+        <DiffViewer
+          filePath={selectedFileForDiff.path}
+          category={selectedFileForDiff.category}
+          diff={diffResult.diff}
+          truncated={diffResult.truncated}
+          isUntracked={diffResult.isUntracked}
+          totalLines={diffResult.totalLines}
+          onBack={() => setView('selectDiffFile')}
+        />
+      </Panel>
     );
   }
 
   return (
-    <Box flexDirection="column" gap={1}>
-      <Text bold color="cyan">
-        File Staging
-      </Text>
-      <Box flexDirection="column">
-        <Text dimColor>
-          Staged: {stagedCount} files · Unstaged: {unstagedCount} files
-        </Text>
-      </Box>
+    <Panel
+      title="stage files"
+      flexGrow={1}
+      width="100%"
+      titleRight={`${stagedCount} staged · ${unstagedCount} unstaged`}
+    >
+      <ScreenHeader title="File Staging" />
       <Menu items={menuItems} onSelect={handleMenuSelect} onCancel={onBack} />
-    </Box>
+    </Panel>
   );
 }

@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
+import { Panel } from '../../components/layout/Panel.js';
 import { Menu } from '../../components/Menu.js';
 import { ConfirmDialog } from '../../components/ConfirmDialog.js';
 import { ErrorDisplay } from '../../components/ErrorDisplay.js';
 import { ProgressIndicator } from '../../components/ProgressIndicator.js';
+import { ScreenHeader } from '../../components/ScreenHeader.js';
+import { CommandPanel } from '../../components/CommandPanel.js';
+import { colors } from '../../theme/colors.js';
 import {
   CONVENTIONAL_COMMIT_TYPES,
   formatConventionalCommit,
@@ -40,6 +44,14 @@ type CommitStep =
   | 'success'
   | 'error';
 
+function CommitShell({ children }: { children: React.ReactNode }): React.ReactElement {
+  return (
+    <Panel title="create commit" flexGrow={1} width="100%">
+      {children}
+    </Panel>
+  );
+}
+
 export function CommitScreen({
   cwd,
   repoInfo,
@@ -66,33 +78,44 @@ export function CommitScreen({
   const [createdCommitHash, setCreatedCommitHash] = useState('');
   const [error, setError] = useState<GitflowError | null>(null);
 
-  // If no staged changes exist
   if (stagedFiles.length === 0 && step !== 'success' && step !== 'executing') {
     return (
-      <Box flexDirection="column" gap={1}>
-        <Text bold color="yellow">
+      <CommitShell>
+        <Text color={colors.yellow} bold>
           No staged changes
         </Text>
         <Text>Stage one or more files before creating a commit.</Text>
-        <Menu
-          items={[
-            { label: 'Go to staging', value: 'staging' },
-            { label: 'Back', value: 'back' },
-          ]}
-          onSelect={item => {
-            if (item.value === 'staging') {
-              onGoToStaging();
-            } else {
-              onBack();
-            }
-          }}
-          onCancel={onBack}
-        />
-      </Box>
+        <Box marginTop={1}>
+          <Menu
+            items={[
+              { label: 'Go to staging', value: 'staging' },
+              { label: 'Back', value: 'back' },
+            ]}
+            onSelect={item => {
+              if (item.value === 'staging') onGoToStaging();
+              else onBack();
+            }}
+            onCancel={onBack}
+          />
+        </Box>
+      </CommitShell>
     );
   }
 
-  // Handle Style Selection
+  const StagedList = ({ max = 8 }: { max?: number }): React.ReactElement => (
+    <Box flexDirection="column">
+      {stagedFiles.slice(0, max).map(f => (
+        <Box key={f.path} flexDirection="row">
+          <Text color={colors.green}>{'  ' + (f.indexStatus || 'M')}</Text>
+          <Text color={colors.white}> {f.path}</Text>
+        </Box>
+      ))}
+      {stagedFiles.length > max && (
+        <Text color={colors.grey}> …and {stagedFiles.length - max} more</Text>
+      )}
+    </Box>
+  );
+
   if (step === 'styleSelect') {
     const styleItems: MenuItem[] = [
       { label: 'Conventional Commit', value: 'conventional' },
@@ -101,23 +124,13 @@ export function CommitScreen({
     ];
 
     return (
-      <Box flexDirection="column" gap={1}>
-        <Text bold color="cyan">
-          Commit Changes
-        </Text>
-
-        <Box flexDirection="column">
-          <Text dimColor>Staged files ({stagedFiles.length}):</Text>
-          {stagedFiles.slice(0, 8).map(f => (
-            <Text key={f.path} color="green">
-              {'  ' + (f.indexStatus || 'M')} {f.path}
-            </Text>
-          ))}
-          {stagedFiles.length > 8 && <Text dimColor> ...and {stagedFiles.length - 8} more</Text>}
-        </Box>
-
-        <Box marginTop={1} flexDirection="column">
-          <Text bold>Choose commit style:</Text>
+      <CommitShell>
+        <ScreenHeader title="Commit Changes" subtitle={`${stagedFiles.length} staged`} />
+        <StagedList />
+        <Box marginTop={1}>
+          <Text color={colors.pink} bold>
+            Choose commit style:
+          </Text>
           <Menu
             items={styleItems}
             onSelect={item => {
@@ -127,18 +140,15 @@ export function CommitScreen({
               } else if (item.value === 'custom') {
                 setCommitStyle('custom');
                 setStep('customMessage');
-              } else {
-                onBack();
-              }
+              } else onBack();
             }}
             onCancel={onBack}
           />
         </Box>
-      </Box>
+      </CommitShell>
     );
   }
 
-  // Conventional: Select Type
   if (step === 'convType') {
     const typeItems: MenuItem[] = CONVENTIONAL_COMMIT_TYPES.map(t => ({
       label: `${t.type.padEnd(10)} ${t.description}`,
@@ -147,10 +157,8 @@ export function CommitScreen({
     typeItems.push({ label: 'Cancel', value: '__cancel__' });
 
     return (
-      <Box flexDirection="column" gap={1}>
-        <Text bold color="cyan">
-          Select commit type:
-        </Text>
+      <CommitShell>
+        <ScreenHeader title="Select commit type" />
         <Menu
           items={typeItems}
           onSelect={item => {
@@ -163,11 +171,10 @@ export function CommitScreen({
           }}
           onCancel={() => setStep('styleSelect')}
         />
-      </Box>
+      </CommitShell>
     );
   }
 
-  // Conventional: Input Scope
   if (step === 'convScope') {
     const handleScopeSubmit = (): void => {
       const val = validateScope(scopeInput);
@@ -180,24 +187,23 @@ export function CommitScreen({
     };
 
     return (
-      <ScopeInputStep
-        type={selectedType}
-        scopeInput={scopeInput}
-        onChange={setScopeInput}
-        onSubmit={handleScopeSubmit}
-        onCancel={() => setStep('convType')}
-        error={scopeError}
-      />
+      <CommitShell>
+        <ScopeInputStep
+          type={selectedType}
+          scopeInput={scopeInput}
+          onChange={setScopeInput}
+          onSubmit={handleScopeSubmit}
+          onCancel={() => setStep('convType')}
+          error={scopeError}
+        />
+      </CommitShell>
     );
   }
 
-  // Conventional: Breaking Change Prompt
   if (step === 'convBreaking') {
     return (
-      <Box flexDirection="column" gap={1}>
-        <Text bold color="cyan">
-          Breaking Changes
-        </Text>
+      <CommitShell>
+        <ScreenHeader title="Breaking Changes" />
         <ConfirmDialog
           message="Is this a breaking change?"
           detail="A breaking change introduces incompatible API or structural modifications."
@@ -210,11 +216,10 @@ export function CommitScreen({
             setStep('convDesc');
           }}
         />
-      </Box>
+      </CommitShell>
     );
   }
 
-  // Conventional: Input Description
   if (step === 'convDesc') {
     const handleDescSubmit = (): void => {
       const val = validateCommitDescription(descInput);
@@ -234,20 +239,21 @@ export function CommitScreen({
     };
 
     return (
-      <DescriptionInputStep
-        type={selectedType}
-        scope={scopeInput}
-        isBreaking={isBreaking}
-        description={descInput}
-        onChange={setDescInput}
-        onSubmit={handleDescSubmit}
-        onCancel={() => setStep('convBreaking')}
-        error={descError}
-      />
+      <CommitShell>
+        <DescriptionInputStep
+          type={selectedType}
+          scope={scopeInput}
+          isBreaking={isBreaking}
+          description={descInput}
+          onChange={setDescInput}
+          onSubmit={handleDescSubmit}
+          onCancel={() => setStep('convBreaking')}
+          error={descError}
+        />
+      </CommitShell>
     );
   }
 
-  // Custom Message Step
   if (step === 'customMessage') {
     const handleCustomSubmit = (): void => {
       const val = validateCustomCommitMessage(customMsgInput);
@@ -261,17 +267,18 @@ export function CommitScreen({
     };
 
     return (
-      <CustomMessageInputStep
-        message={customMsgInput}
-        onChange={setCustomMsgInput}
-        onSubmit={handleCustomSubmit}
-        onCancel={() => setStep('styleSelect')}
-        error={customMsgError}
-      />
+      <CommitShell>
+        <CustomMessageInputStep
+          message={customMsgInput}
+          onChange={setCustomMsgInput}
+          onSubmit={handleCustomSubmit}
+          onCancel={() => setStep('styleSelect')}
+          error={customMsgError}
+        />
+      </CommitShell>
     );
   }
 
-  // Preview Step
   if (step === 'preview') {
     const previewItems: MenuItem[] = [
       { label: 'Create Commit', value: 'commit' },
@@ -285,20 +292,14 @@ export function CommitScreen({
         { message: 'Validating staged changes...', status: 'pending' },
       ];
       setLogs([...currentLogs]);
-
       try {
         await new Promise(r => setTimeout(r, 100));
         currentLogs[0] = { message: 'Validating staged changes', status: 'success' };
-        currentLogs.push({
-          message: `Creating commit: "${finalCommitMessage}"...`,
-          status: 'pending',
-        });
+        currentLogs.push({ message: 'Creating commit...', status: 'pending' });
         setLogs([...currentLogs]);
-
         await createCommit(cwd, finalCommitMessage);
         currentLogs[1] = { message: 'Creating commit', status: 'success' };
         setLogs([...currentLogs]);
-
         await onRefresh();
         const updatedInfo = await getRepoInfo(cwd);
         setCreatedCommitHash(updatedInfo.lastCommit?.hash ?? '');
@@ -311,66 +312,44 @@ export function CommitScreen({
     };
 
     return (
-      <Box flexDirection="column" gap={1}>
-        <Text bold color="cyan">
-          Commit Preview
-        </Text>
-
-        <Box flexDirection="column">
-          <Text dimColor>Message:</Text>
-          <Text bold color="white">
+      <CommitShell>
+        <ScreenHeader title="Commit Preview" />
+        <Box>
+          <Text color={colors.grey}>message: </Text>
+          <Text color={colors.white} bold>
             {finalCommitMessage}
           </Text>
         </Box>
-
-        <Box flexDirection="column">
-          <Text dimColor>Files ({stagedFiles.length}):</Text>
-          {stagedFiles.slice(0, 6).map(f => (
-            <Text key={f.path} color="green">
-              {'  ' + (f.indexStatus || 'M')} {f.path}
-            </Text>
-          ))}
-          {stagedFiles.length > 6 && <Text dimColor> ...and {stagedFiles.length - 6} more</Text>}
+        <Box marginTop={1}>
+          <Text color={colors.grey}>files ({stagedFiles.length}):</Text>
         </Box>
-
-        <Box flexDirection="column">
-          <Text dimColor>Command:</Text>
-          <Text color="cyan">git commit -m &quot;{finalCommitMessage}&quot;</Text>
+        <StagedList max={6} />
+        <Box marginY={1}>
+          <CommandPanel command={`git commit -m "${finalCommitMessage}"`} />
         </Box>
-
         <Menu
           items={previewItems}
           onSelect={item => {
-            if (item.value === 'commit') {
-              void handleExecuteCommit();
-            } else if (item.value === 'edit') {
-              if (commitStyle === 'conventional') {
-                setStep('convDesc');
-              } else {
-                setStep('customMessage');
-              }
-            } else {
-              onBack();
-            }
+            if (item.value === 'commit') void handleExecuteCommit();
+            else if (item.value === 'edit') {
+              if (commitStyle === 'conventional') setStep('convDesc');
+              else setStep('customMessage');
+            } else onBack();
           }}
         />
-      </Box>
+      </CommitShell>
     );
   }
 
-  // Executing Step
   if (step === 'executing') {
     return (
-      <Box flexDirection="column" gap={1}>
-        <Text bold color="cyan">
-          Creating commit...
-        </Text>
+      <CommitShell>
+        <ScreenHeader title="Creating commit…" />
         <ProgressIndicator logs={logs} />
-      </Box>
+      </CommitShell>
     );
   }
 
-  // Success Step
   if (step === 'success') {
     const successItems: MenuItem[] = [
       { label: 'Return to repository', value: 'back' },
@@ -379,37 +358,30 @@ export function CommitScreen({
     ];
 
     return (
-      <Box flexDirection="column" gap={1}>
-        <Text bold color="green">
+      <CommitShell>
+        <Text color={colors.green} bold>
           ✓ Commit created successfully.
         </Text>
-
         <Box marginY={1}>
-          {createdCommitHash ? <Text color="yellow">{createdCommitHash} </Text> : null}
+          {createdCommitHash ? <Text color={colors.yellow}>{createdCommitHash} </Text> : null}
           <Text>{finalCommitMessage}</Text>
         </Box>
-
         <Menu
           items={successItems}
           onSelect={item => {
-            if (item.value === 'back') {
-              onBack();
-            } else if (item.value === 'status') {
-              onViewStatus();
-            } else if (item.value === 'push') {
-              onPushChanges();
-            }
+            if (item.value === 'back') onBack();
+            else if (item.value === 'status') onViewStatus();
+            else if (item.value === 'push') onPushChanges();
           }}
           onCancel={onBack}
         />
-      </Box>
+      </CommitShell>
     );
   }
 
-  // Error Step
   if (step === 'error' && error) {
     return (
-      <Box flexDirection="column" gap={1}>
+      <CommitShell>
         <ErrorDisplay title={error.title} message={error.message} hint={error.suggestion} />
         <Box marginTop={1}>
           <Menu
@@ -418,23 +390,23 @@ export function CommitScreen({
               { label: 'Return to repository', value: 'back' },
             ]}
             onSelect={item => {
-              if (item.value === 'retry') {
-                setStep('preview');
-              } else {
-                onBack();
-              }
+              if (item.value === 'retry') setStep('preview');
+              else onBack();
             }}
             onCancel={onBack}
           />
         </Box>
-      </Box>
+      </CommitShell>
     );
   }
 
-  return <Box />;
+  return (
+    <CommitShell>
+      <Box />
+    </CommitShell>
+  );
 }
 
-// Subcomponents for input steps with useInput handlers for Esc cancellation
 interface ScopeInputStepProps {
   type: string;
   scopeInput: string;
@@ -452,35 +424,32 @@ function ScopeInputStep({
   onCancel,
   error,
 }: ScopeInputStepProps): React.ReactElement {
-  useInput((_input, key) => {
+  useInput((input, key) => {
     if (
       key.escape ||
-      _input === '\u001b' ||
-      _input === '\x1b' ||
-      (_input != null && _input.charCodeAt(0) === 27)
-    ) {
+      input === '\u001b' ||
+      input === '\x1b' ||
+      (input != null && input.charCodeAt(0) === 27)
+    )
       onCancel();
-    }
   });
 
   return (
     <Box flexDirection="column" gap={1}>
-      <Text bold color="cyan">
+      <Text color={colors.pink} bold>
         Scope (optional):
       </Text>
-      <Text dimColor>
+      <Text color={colors.grey}>
         Specify the module or area affected (e.g. ui, api, config) or press Enter to skip.
       </Text>
       <Box>
-        <Text color="cyan">{type}</Text>
+        <Text color={colors.coral}>{type}</Text>
         <Text>(</Text>
         <TextInput value={scopeInput} onChange={onChange} onSubmit={onSubmit} />
-        <Text>): ...</Text>
+        <Text>): …</Text>
       </Box>
-      {error && <Text color="red">⚠ {error}</Text>}
-      <Box marginTop={1}>
-        <Text dimColor>Enter Continue · Esc Back</Text>
-      </Box>
+      {error && <Text color={colors.red}>⚠ {error}</Text>}
+      <Text color={colors.grey}>Enter continue · Esc back</Text>
     </Box>
   );
 }
@@ -506,15 +475,14 @@ function DescriptionInputStep({
   onCancel,
   error,
 }: DescriptionInputStepProps): React.ReactElement {
-  useInput((_input, key) => {
+  useInput((input, key) => {
     if (
       key.escape ||
-      _input === '\u001b' ||
-      _input === '\x1b' ||
-      (_input != null && _input.charCodeAt(0) === 27)
-    ) {
+      input === '\u001b' ||
+      input === '\x1b' ||
+      (input != null && input.charCodeAt(0) === 27)
+    )
       onCancel();
-    }
   });
 
   const prefix = scope.trim()
@@ -523,20 +491,18 @@ function DescriptionInputStep({
 
   return (
     <Box flexDirection="column" gap={1}>
-      <Text bold color="cyan">
+      <Text color={colors.pink} bold>
         Commit Description:
       </Text>
-      <Text dimColor>
+      <Text color={colors.grey}>
         Enter a clear, concise summary in the imperative mood (no ending period).
       </Text>
       <Box>
-        <Text color="cyan">{prefix}</Text>
+        <Text color={colors.coral}>{prefix}</Text>
         <TextInput value={description} onChange={onChange} onSubmit={onSubmit} />
       </Box>
-      {error && <Text color="red">⚠ {error}</Text>}
-      <Box marginTop={1}>
-        <Text dimColor>Enter Continue · Esc Back</Text>
-      </Box>
+      {error && <Text color={colors.red}>⚠ {error}</Text>}
+      <Text color={colors.grey}>Enter continue · Esc back</Text>
     </Box>
   );
 }
@@ -556,30 +522,27 @@ function CustomMessageInputStep({
   onCancel,
   error,
 }: CustomMessageInputStepProps): React.ReactElement {
-  useInput((_input, key) => {
+  useInput((input, key) => {
     if (
       key.escape ||
-      _input === '\u001b' ||
-      _input === '\x1b' ||
-      (_input != null && _input.charCodeAt(0) === 27)
-    ) {
+      input === '\u001b' ||
+      input === '\x1b' ||
+      (input != null && input.charCodeAt(0) === 27)
+    )
       onCancel();
-    }
   });
 
   return (
     <Box flexDirection="column" gap={1}>
-      <Text bold color="cyan">
+      <Text color={colors.pink} bold>
         Commit Message:
       </Text>
-      <Text dimColor>Enter your commit message:</Text>
-      <Box borderStyle="single" borderColor="cyan" paddingX={1}>
+      <Text color={colors.grey}>Enter your commit message:</Text>
+      <Box borderStyle="single" borderColor={colors.coral} paddingX={1}>
         <TextInput value={message} onChange={onChange} onSubmit={onSubmit} />
       </Box>
-      {error && <Text color="red">⚠ {error}</Text>}
-      <Box marginTop={1}>
-        <Text dimColor>Enter Continue · Esc Cancel</Text>
-      </Box>
+      {error && <Text color={colors.red}>⚠ {error}</Text>}
+      <Text color={colors.grey}>Enter continue · Esc cancel</Text>
     </Box>
   );
 }

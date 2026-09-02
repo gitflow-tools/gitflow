@@ -3,6 +3,7 @@ import { Box, Text, useInput } from 'ink';
 import { Menu } from '../../components/Menu.js';
 import type { MenuItem } from '../../components/Menu.js';
 import { CommandPreview } from '../../components/CommandPreview.js';
+import { colors } from '../../theme/colors.js';
 import type { SetupPlan } from '../../../setup/types.js';
 
 interface ReviewStepProps {
@@ -36,7 +37,7 @@ export function ReviewStep({
 
   return (
     <Box flexDirection="column" gap={1}>
-      <Text bold color="cyan">
+      <Text color={colors.pink} bold>
         Step 7/7 — Review and Execute
       </Text>
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
+import { colors } from '../../theme/colors.js';
 import type { FileChange } from '../../../git/types.js';
 
 interface FileSelectorProps {
@@ -33,46 +34,34 @@ export function FileSelector({
         onCancel();
         return;
       }
-
       if (key.upArrow) {
         setCursorIndex(prev => (prev > 0 ? prev - 1 : files.length - 1));
         return;
       }
-
       if (key.downArrow) {
         setCursorIndex(prev => (prev < files.length - 1 ? prev + 1 : 0));
         return;
       }
-
       if (input === ' ') {
         const current = files[cursorIndex];
         if (current) {
           setSelectedPaths(prev => {
             const next = new Set(prev);
-            if (next.has(current.path)) {
-              next.delete(current.path);
-            } else {
-              next.add(current.path);
-            }
+            if (next.has(current.path)) next.delete(current.path);
+            else next.add(current.path);
             return next;
           });
         }
         return;
       }
-
       if (input === 'a' || input === 'A') {
         setSelectedPaths(prev => {
-          if (prev.size === files.length) {
-            return new Set();
-          }
+          if (prev.size === files.length) return new Set();
           return new Set(files.map(f => f.path));
         });
         return;
       }
-
-      if (key.return) {
-        onSubmit(Array.from(selectedPaths));
-      }
+      if (key.return) onSubmit(Array.from(selectedPaths));
     },
     { isActive: isFocused },
   );
@@ -80,13 +69,10 @@ export function FileSelector({
   if (files.length === 0) {
     return (
       <Box flexDirection="column" gap={1}>
-        <Text bold color="cyan">
+        <Text color={colors.pink} bold>
           {title}
         </Text>
         <Text dimColor>No files available.</Text>
-        <Box marginTop={1}>
-          <Text dimColor>Press Escape to return</Text>
-        </Box>
       </Box>
     );
   }
@@ -94,23 +80,23 @@ export function FileSelector({
   const getStatusColor = (category: string): string => {
     switch (category) {
       case 'staged':
-        return 'green';
+        return colors.green;
       case 'modified':
-        return 'yellow';
+        return colors.yellow;
       case 'untracked':
-        return 'magenta';
+        return colors.coral;
       case 'deleted':
-        return 'red';
+        return colors.red;
       case 'renamed':
-        return 'cyan';
+        return colors.pink;
       default:
-        return 'white';
+        return colors.white;
     }
   };
 
   return (
     <Box flexDirection="column" gap={1}>
-      <Text bold color="cyan">
+      <Text color={colors.pink} bold>
         {title}
       </Text>
 
@@ -121,23 +107,27 @@ export function FileSelector({
           const statusColor = getStatusColor(file.category);
 
           return (
-            <Box key={file.path}>
-              <Text color={isCursor ? 'cyan' : undefined} bold={isCursor}>
+            <Box key={file.path} flexDirection="row">
+              <Text color={isCursor ? colors.pink : undefined} bold={isCursor}>
                 {isCursor ? '❯ ' : '  '}
               </Text>
-              <Text color={isChecked ? 'green' : 'gray'}>{isChecked ? '[x] ' : '[ ] '}</Text>
+              <Text color={isChecked ? colors.green : colors.grey}>
+                {isChecked ? '[x] ' : '[ ] '}
+              </Text>
               <Text color={statusColor}>{file.category.padEnd(9)}</Text>
-              <Text bold={isCursor}>{file.path}</Text>
+              <Text color={colors.white} bold={isCursor}>
+                {file.path}
+              </Text>
             </Box>
           );
         })}
       </Box>
 
       <Box marginTop={1} flexDirection="column">
-        <Text dimColor>
+        <Text color={colors.grey}>
           Selected: {selectedPaths.size} of {files.length} files
         </Text>
-        <Text dimColor>Space Toggle · A Toggle All · Enter Continue · Esc Cancel</Text>
+        <Text color={colors.grey}>Space toggle · A toggle all · Enter continue · Esc cancel</Text>
       </Box>
     </Box>
   );

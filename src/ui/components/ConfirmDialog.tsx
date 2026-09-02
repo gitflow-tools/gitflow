@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Text } from 'ink';
 import { Menu } from './Menu.js';
+import { colors } from '../theme/colors.js';
 import type { MenuItem } from './Menu.js';
 
 interface ConfirmDialogProps {
@@ -32,8 +33,16 @@ export function ConfirmDialog({
   };
 
   return (
-    <Box flexDirection="column" gap={1}>
-      <Text bold color="yellow">
+    <Box
+      flexDirection="column"
+      gap={1}
+      borderStyle="round"
+      borderColor={colors.coral}
+      paddingX={2}
+      paddingY={1}
+      width={52}
+    >
+      <Text color={colors.coral} bold>
         {message}
       </Text>
       {detail != null && <Text dimColor>{detail}</Text>}

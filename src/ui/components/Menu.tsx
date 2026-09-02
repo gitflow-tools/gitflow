@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
+import { colors } from '../theme/colors.js';
 
 export interface MenuItem {
   readonly label: string;
   readonly value: string;
   readonly disabled?: boolean;
   readonly warning?: string;
+  readonly detail?: string;
 }
 
 interface MenuProps {
@@ -13,6 +15,7 @@ interface MenuProps {
   onSelect: (item: MenuItem) => void;
   onCancel?: () => void;
   isFocused?: boolean;
+  hideSelectedIcon?: boolean;
 }
 
 export function Menu({
@@ -20,6 +23,7 @@ export function Menu({
   onSelect,
   onCancel,
   isFocused = true,
+  hideSelectedIcon = false,
 }: MenuProps): React.ReactElement {
   const enabledIndices = items.reduce<number[]>((acc, item, index) => {
     if (item.disabled !== true) acc.push(index);
@@ -30,38 +34,33 @@ export function Menu({
   const [selectedIndex, setSelectedIndex] = useState<number>(firstEnabled);
 
   useInput(
-    (_input, key) => {
+    (input, key) => {
       if (
-        key.escape ||
-        _input === 'q' ||
-        _input === 'Q' ||
-        _input === '\u001b' ||
-        _input === '\x1b' ||
-        (_input != null && _input.charCodeAt(0) === 27)
+        onCancel &&
+        (key.escape ||
+          input === 'q' ||
+          input === 'Q' ||
+          input === '\u001b' ||
+          input === '\x1b' ||
+          (input != null && input.charCodeAt(0) === 27))
       ) {
-        if (onCancel) {
-          onCancel();
-          return;
-        }
+        onCancel();
+        return;
       }
 
-      if (key.upArrow) {
+      if (key.upArrow || input === 'k' || input === 'K') {
         setSelectedIndex(prev => {
           const pos = enabledIndices.indexOf(prev);
           const nextPos = pos <= 0 ? enabledIndices.length - 1 : pos - 1;
           return enabledIndices[nextPos] ?? prev;
         });
-      }
-
-      if (key.downArrow) {
+      } else if (key.downArrow || input === 'j' || input === 'J') {
         setSelectedIndex(prev => {
           const pos = enabledIndices.indexOf(prev);
           const nextPos = pos >= enabledIndices.length - 1 ? 0 : pos + 1;
           return enabledIndices[nextPos] ?? prev;
         });
-      }
-
-      if (key.return) {
+      } else if (key.return) {
         const item = items[selectedIndex];
         if (item != null && item.disabled !== true) {
           onSelect(item);
@@ -79,15 +78,36 @@ export function Menu({
 
         return (
           <Box key={item.value} flexDirection="column">
-            <Text
-              color={isDisabled ? 'gray' : isSelected ? 'white' : undefined}
-              bold={isSelected && !isDisabled}
-              dimColor={isDisabled}
-            >
-              {isSelected && !isDisabled ? '❯ ' : '  '}
-              {item.label}
-            </Text>
-            {isSelected && item.warning != null && <Text color="yellow"> ⚠ {item.warning}</Text>}
+            <Box flexDirection="row" paddingX={1}>
+              <Text>
+                {hideSelectedIcon ? (
+                  <Text> </Text>
+                ) : isSelected && !isDisabled ? (
+                  <Text color={colors.pink} bold>
+                    ❯{' '}
+                  </Text>
+                ) : (
+                  <Text> </Text>
+                )}
+                <Text
+                  color={isDisabled ? colors.grey : isSelected ? colors.white : colors.lightGrey}
+                  bold={isSelected && !isDisabled}
+                  dimColor={isDisabled}
+                >
+                  {item.label}
+                </Text>
+              </Text>
+            </Box>
+            {item.detail != null && !isSelected && (
+              <Box paddingX={3}>
+                <Text color={colors.grey}>{item.detail}</Text>
+              </Box>
+            )}
+            {isSelected && item.warning != null && (
+              <Box paddingX={3}>
+                <Text color={colors.yellow}>⚠ {item.warning}</Text>
+              </Box>
+            )}
           </Box>
         );
       })}

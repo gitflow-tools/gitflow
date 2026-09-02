@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { Menu } from '../../components/Menu.js';
 import type { MenuItem } from '../../components/Menu.js';
+import { colors } from '../../theme/colors.js';
 import { type GitignoreTemplate, detectExistingGitignore } from '../../../templates/gitignore.js';
 
 export interface GitignoreStepData {
@@ -74,7 +75,7 @@ export function GitignoreStep({
 
   return (
     <Box flexDirection="column" gap={1}>
-      <Text bold color="cyan">
+      <Text color={colors.pink} bold>
         Step 4/7 — .gitignore
       </Text>
 

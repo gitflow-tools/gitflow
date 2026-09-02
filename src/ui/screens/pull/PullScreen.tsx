@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { Box, Text } from 'ink';
+import { Panel } from '../../components/layout/Panel.js';
 import { Menu } from '../../components/Menu.js';
 import { ErrorDisplay } from '../../components/ErrorDisplay.js';
+import { ScreenHeader } from '../../components/ScreenHeader.js';
+import { CommandPanel } from '../../components/CommandPanel.js';
+import { InfoRow } from '../../components/Section.js';
+import { colors } from '../../theme/colors.js';
 import { pull } from '../../../git/client.js';
 import { toGitflowError, type GitflowError } from '../../../utils/errors.js';
 import type { RepoInfo, PullResult } from '../../../git/types.js';
@@ -16,6 +21,14 @@ interface PullScreenProps {
 }
 
 type PullView = 'overview' | 'dirtyWarning' | 'pulling' | 'result' | 'error';
+
+function PullShell({ children }: { children: React.ReactNode }): React.ReactElement {
+  return (
+    <Panel title="pull" flexGrow={1} width="100%">
+      {children}
+    </Panel>
+  );
+}
 
 export function PullScreen({
   cwd,
@@ -52,118 +65,111 @@ export function PullScreen({
     }
   };
 
-  // No remotes configured
   if (!hasRemotes && view !== 'error') {
     return (
-      <Box flexDirection="column" gap={1}>
-        <Text bold color="yellow">
+      <PullShell>
+        <Text color={colors.yellow} bold>
           No remote configured.
         </Text>
         <Text>Add a remote repository before pulling changes.</Text>
         <Menu items={[{ label: 'Back', value: 'back' }]} onSelect={() => onBack()} />
-      </Box>
+      </PullShell>
     );
   }
 
-  // Dirty Working Tree Warning View
   if (view === 'dirtyWarning') {
     const dirtyItems: MenuItem[] = [
       ...(onGoToStaging ? [{ label: 'View local changes', value: 'staging' }] : []),
       { label: 'Continue anyway', value: 'continue' },
       { label: 'Cancel', value: 'cancel' },
     ];
-
     return (
-      <Box flexDirection="column" gap={1}>
-        <Text bold color="yellow">
+      <PullShell>
+        <Text color={colors.yellow} bold>
           ⚠ You have local changes.
         </Text>
         <Text>Pulling from remote may cause merge conflicts or overwrite uncommitted work.</Text>
-        <Box flexDirection="column" marginY={1}>
-          <Text dimColor>
+        <Box marginY={1}>
+          <Text color={colors.grey}>
             Local modifications: {fileStatus.modified} modified · {fileStatus.staged} staged ·{' '}
             {fileStatus.untracked} untracked
           </Text>
         </Box>
+        <CommandPanel command={commandString} label="will run" />
         <Menu
           items={dirtyItems}
           onSelect={item => {
-            if (item.value === 'staging' && onGoToStaging) {
-              onGoToStaging();
-            } else if (item.value === 'continue') {
-              setView('overview');
-            } else {
-              onBack();
-            }
+            if (item.value === 'staging' && onGoToStaging) onGoToStaging();
+            else if (item.value === 'continue') setView('overview');
+            else onBack();
           }}
         />
-      </Box>
+      </PullShell>
     );
   }
 
-  // Pulling View
   if (view === 'pulling') {
     return (
-      <Box flexDirection="column" gap={1}>
-        <Text bold color="cyan">
-          Pulling latest changes...
-        </Text>
-        <Text dimColor>Branch: {branch}</Text>
-        <Text dimColor>Upstream: {upstreamDisplay}</Text>
-        <Box marginTop={1}>
-          <Text color="yellow">Please wait...</Text>
+      <PullShell>
+        <ScreenHeader title="Pulling latest changes…" />
+        <Box flexDirection="column">
+          <InfoRow label="branch">
+            <Text>{branch}</Text>
+          </InfoRow>
+          <InfoRow label="upstream">
+            <Text>{upstreamDisplay}</Text>
+          </InfoRow>
         </Box>
-      </Box>
+        <Box marginTop={1}>
+          <Text color={colors.yellow}>Please wait…</Text>
+        </Box>
+      </PullShell>
     );
   }
 
-  // Pull Result View
   if (view === 'result' && pullResult) {
     if (pullResult.hasConflict) {
       return (
-        <Box flexDirection="column" gap={1}>
-          <Text bold color="red">
+        <PullShell>
+          <Text color={colors.red} bold>
             ✗ Merge conflict detected.
           </Text>
           <Text>Git was unable to automatically merge some changes.</Text>
-
           {pullResult.conflictedFiles && pullResult.conflictedFiles.length > 0 && (
             <Box flexDirection="column" marginY={1}>
-              <Text bold dimColor>
+              <Text color={colors.pink} bold>
                 Affected files:
               </Text>
               {pullResult.conflictedFiles.map(file => (
-                <Text key={file} color="red">
+                <Text key={file} color={colors.red}>
                   {'  • ' + file}
                 </Text>
               ))}
             </Box>
           )}
-
           <Box flexDirection="column" marginY={1}>
-            <Text dimColor>Suggested steps:</Text>
+            <Text color={colors.grey}>Suggested steps:</Text>
             <Text>1. Resolve the conflicts manually in the affected files.</Text>
             <Text>2. Stage the resolved files:</Text>
-            <Text color="cyan"> git add &lt;file&gt;</Text>
+            <Text color={colors.orange}> git add &lt;file&gt;</Text>
             <Text>3. Complete the merge:</Text>
-            <Text color="cyan"> git commit</Text>
+            <Text color={colors.orange}> git commit</Text>
           </Box>
-
           <Menu
             items={[{ label: 'Return to repository', value: 'back' }]}
             onSelect={() => onBack()}
           />
-        </Box>
+        </PullShell>
       );
     }
 
     if (pullResult.alreadyUpToDate) {
       return (
-        <Box flexDirection="column" gap={1}>
-          <Text bold color="green">
+        <PullShell>
+          <Text color={colors.green} bold>
             ✓ Already up to date.
           </Text>
-          <Text dimColor>
+          <Text color={colors.grey}>
             Branch {branch} is synchronized with {upstreamDisplay}.
           </Text>
           <Box marginTop={1}>
@@ -172,38 +178,35 @@ export function PullScreen({
               onSelect={() => onBack()}
             />
           </Box>
-        </Box>
+        </PullShell>
       );
     }
 
     return (
-      <Box flexDirection="column" gap={1}>
-        <Text bold color="green">
+      <PullShell>
+        <Text color={colors.green} bold>
           ✓ Pull completed successfully.
         </Text>
-
         <Box flexDirection="column" marginY={1}>
-          <Text bold dimColor>
+          <Text color={colors.pink} bold>
             Changes received:
           </Text>
-          <Text color="cyan"> • {pullResult.filesChanged} files changed</Text>
-          <Text color="green"> • +{pullResult.insertions} insertions</Text>
-          <Text color="red"> • -{pullResult.deletions} deletions</Text>
+          <Text color={colors.orange}> • {pullResult.filesChanged} files changed</Text>
+          <Text color={colors.green}> • +{pullResult.insertions} insertions</Text>
+          <Text color={colors.red}> • -{pullResult.deletions} deletions</Text>
         </Box>
-
         <Menu
           items={[{ label: 'Return to repository', value: 'back' }]}
           onSelect={() => onBack()}
           onCancel={onBack}
         />
-      </Box>
+      </PullShell>
     );
   }
 
-  // Error View
   if (view === 'error' && error) {
     return (
-      <Box flexDirection="column" gap={1}>
+      <PullShell>
         <ErrorDisplay title={error.title} message={error.message} hint={error.suggestion} />
         <Box marginTop={1}>
           <Menu
@@ -212,55 +215,41 @@ export function PullScreen({
               { label: 'Return to repository', value: 'back' },
             ]}
             onSelect={item => {
-              if (item.value === 'retry') {
-                setView('overview');
-              } else {
-                onBack();
-              }
+              if (item.value === 'retry') setView('overview');
+              else onBack();
             }}
             onCancel={onBack}
           />
         </Box>
-      </Box>
+      </PullShell>
     );
   }
 
-  // Overview View
   return (
-    <Box flexDirection="column" gap={1}>
-      <Text bold color="cyan">
-        Pull Changes
-      </Text>
-
-      <Box flexDirection="column">
-        <Text dimColor>Branch:</Text>
-        <Text color="cyan">{branch}</Text>
+    <PullShell>
+      <ScreenHeader title="Pull Changes" />
+      <Box flexDirection="column" gap={1} marginBottom={1}>
+        <InfoRow label="branch">
+          <Text color={colors.pink}>{branch}</Text>
+        </InfoRow>
+        <InfoRow label="upstream">
+          <Text>{upstreamDisplay}</Text>
+        </InfoRow>
       </Box>
-
-      <Box flexDirection="column">
-        <Text dimColor>Upstream:</Text>
-        <Text>{upstreamDisplay}</Text>
+      <Box marginBottom={1}>
+        <CommandPanel command={commandString} />
       </Box>
-
-      <Box flexDirection="column">
-        <Text dimColor>Command:</Text>
-        <Text color="cyan">{commandString}</Text>
-      </Box>
-
       <Menu
         items={[
           { label: 'Pull latest changes', value: 'pull' },
           { label: 'Cancel', value: 'cancel' },
         ]}
         onSelect={item => {
-          if (item.value === 'pull') {
-            void handleExecutePull();
-          } else {
-            onBack();
-          }
+          if (item.value === 'pull') void handleExecutePull();
+          else onBack();
         }}
         onCancel={onBack}
       />
-    </Box>
+    </PullShell>
   );
 }

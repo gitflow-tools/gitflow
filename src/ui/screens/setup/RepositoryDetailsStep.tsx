@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
+import { colors } from '../../theme/colors.js';
 import { validateRepositoryName } from '../../../setup/validation.js';
 
 interface RepositoryDetailsStepProps {
@@ -37,7 +38,7 @@ export function RepositoryDetailsStep({
 
   return (
     <Box flexDirection="column" gap={1}>
-      <Text bold color="cyan">
+      <Text color={colors.pink} bold>
         Step 2/7 — Repository Details
       </Text>
 

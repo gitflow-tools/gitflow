@@ -3,6 +3,7 @@ import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
 import { Menu } from '../../components/Menu.js';
 import type { MenuItem } from '../../components/Menu.js';
+import { colors } from '../../theme/colors.js';
 import { homeDirRelative } from '../../../utils/paths.js';
 import { validateDirectory } from '../../../setup/validation.js';
 import { isGitRepository } from '../../../git/client.js';
@@ -70,7 +71,7 @@ export function DirectoryStep({
 
   return (
     <Box flexDirection="column" gap={1}>
-      <Text bold color="cyan">
+      <Text color={colors.pink} bold>
         Step 1/7 — Select Directory
       </Text>
 

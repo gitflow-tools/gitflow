@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { ProgressIndicator } from '../../components/ProgressIndicator.js';
 import { Menu } from '../../components/Menu.js';
+import { colors } from '../../theme/colors.js';
 import { homeDirRelative } from '../../../utils/paths.js';
 import { executeSetupPlan, type ExecutionLogEntry } from '../../../setup/executor.js';
 import type { SetupPlan } from '../../../setup/types.js';
@@ -63,7 +64,7 @@ export function ExecutionStep({
     <Box flexDirection="column" gap={1}>
       {phase === 'executing' && (
         <Box flexDirection="column" gap={1}>
-          <Text bold color="cyan">
+          <Text color={colors.pink} bold>
             Setting up repository...
           </Text>
           <ProgressIndicator logs={logs} />
@@ -72,7 +73,7 @@ export function ExecutionStep({
 
       {phase === 'success' && (
         <Box flexDirection="column" gap={1}>
-          <Text bold color="green">
+          <Text color={colors.green} bold>
             ✓ Repository setup complete!
           </Text>
 
@@ -91,7 +92,7 @@ export function ExecutionStep({
 
       {phase === 'failed' && (
         <Box flexDirection="column" gap={1}>
-          <Text bold color="red">
+          <Text color={colors.red} bold>
             ✗ Repository setup failed.
           </Text>
 

@@ -3,6 +3,7 @@ import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
 import { Menu } from '../../components/Menu.js';
 import type { MenuItem } from '../../components/Menu.js';
+import { colors } from '../../theme/colors.js';
 import { validateRemoteName, validateRemoteUrl } from '../../../setup/validation.js';
 import type { RemoteConfig } from '../../../git/remote.js';
 
@@ -86,7 +87,7 @@ export function RemoteStep({ initialData, onNext, onBack }: RemoteStepProps): Re
 
   return (
     <Box flexDirection="column" gap={1}>
-      <Text bold color="cyan">
+      <Text color={colors.pink} bold>
         Step 6/7 — Remote Repository
       </Text>
 
@@ -141,7 +142,7 @@ export function RemoteStep({ initialData, onNext, onBack }: RemoteStepProps): Re
       {phase === 'pushChoice' && (
         <Box flexDirection="column" gap={1}>
           <Text dimColor>Push after setup?</Text>
-          <Box flexDirection="column" borderStyle="single" borderColor="gray" paddingX={1}>
+          <Box flexDirection="column" borderStyle="single" borderColor={colors.border} paddingX={1}>
             <Text dimColor>
               Note: Pushing requires the remote repository to already exist and be accessible with
               your credentials.

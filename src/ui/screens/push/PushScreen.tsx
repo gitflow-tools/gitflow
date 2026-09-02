@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import { Box, Text } from 'ink';
 import TextInput from 'ink-text-input';
+import { Panel } from '../../components/layout/Panel.js';
 import { Menu } from '../../components/Menu.js';
 import { ErrorDisplay } from '../../components/ErrorDisplay.js';
+import { ScreenHeader } from '../../components/ScreenHeader.js';
+import { CommandPanel } from '../../components/CommandPanel.js';
+import { InfoRow } from '../../components/Section.js';
+import { colors } from '../../theme/colors.js';
 import { push, addRemote } from '../../../git/client.js';
 import { toGitflowError, type GitflowError } from '../../../utils/errors.js';
 import { validateRemoteName, validateRemoteUrl } from '../../../git/remote.js';
@@ -18,6 +23,14 @@ interface PushScreenProps {
 }
 
 type PushView = 'overview' | 'selectRemote' | 'addRemote' | 'pushing' | 'success' | 'error';
+
+function PushShell({ children }: { children: React.ReactNode }): React.ReactElement {
+  return (
+    <Panel title="push" flexGrow={1} width="100%">
+      {children}
+    </Panel>
+  );
+}
 
 export function PushScreen({
   cwd,
@@ -47,11 +60,7 @@ export function PushScreen({
   const handleExecutePush = async (): Promise<void> => {
     setView('pushing');
     try {
-      await push(cwd, {
-        remote: selectedRemote,
-        branch: targetBranch,
-        setUpstream: !hasUpstream,
-      });
+      await push(cwd, { remote: selectedRemote, branch: targetBranch, setUpstream: !hasUpstream });
       await onRefresh();
       setView('success');
     } catch (err) {
@@ -72,13 +81,11 @@ export function PushScreen({
       setAddRemoteStep('url');
       return;
     }
-
     const urlVal = validateRemoteUrl(newRemoteUrl);
     if (!urlVal.valid) {
       setAddRemoteError(urlVal.error ?? 'Invalid URL');
       return;
     }
-
     try {
       await addRemote(cwd, newRemoteName.trim(), newRemoteUrl.trim());
       setSelectedRemote(newRemoteName.trim());
@@ -90,41 +97,36 @@ export function PushScreen({
     }
   };
 
-  // 1. If No Remote configured
   if (!hasRemotes && view !== 'addRemote' && view !== 'error') {
     return (
-      <Box flexDirection="column" gap={1}>
-        <Text bold color="yellow">
+      <PushShell>
+        <Text color={colors.yellow} bold>
           No remote configured.
         </Text>
         <Text>Add a remote repository before pushing changes.</Text>
-        <Menu
-          items={[
-            { label: 'Configure remote', value: 'addRemote' },
-            { label: 'Back', value: 'back' },
-          ]}
-          onSelect={item => {
-            if (item.value === 'addRemote') {
-              setView('addRemote');
-            } else {
-              onBack();
-            }
-          }}
-        />
-      </Box>
+        <Box marginTop={1}>
+          <Menu
+            items={[
+              { label: 'Configure remote', value: 'addRemote' },
+              { label: 'Back', value: 'back' },
+            ]}
+            onSelect={item => {
+              if (item.value === 'addRemote') setView('addRemote');
+              else onBack();
+            }}
+          />
+        </Box>
+      </PushShell>
     );
   }
 
-  // Add Remote View
   if (view === 'addRemote') {
     return (
-      <Box flexDirection="column" gap={1}>
-        <Text bold color="cyan">
-          Configure Remote
-        </Text>
+      <PushShell>
+        <ScreenHeader title="Configure Remote" />
         {addRemoteStep === 'name' ? (
           <Box flexDirection="column" gap={1}>
-            <Text dimColor>Remote name (default: origin):</Text>
+            <Text color={colors.grey}>Remote name (default: origin):</Text>
             <TextInput
               value={newRemoteName}
               onChange={setNewRemoteName}
@@ -133,9 +135,7 @@ export function PushScreen({
           </Box>
         ) : (
           <Box flexDirection="column" gap={1}>
-            <Text dimColor>
-              Remote URL (e.g. https://github.com/user/repo.git or git@github.com:user/repo.git):
-            </Text>
+            <Text color={colors.grey}>Remote URL (e.g. https://github.com/user/repo.git):</Text>
             <TextInput
               value={newRemoteUrl}
               onChange={setNewRemoteUrl}
@@ -143,62 +143,53 @@ export function PushScreen({
             />
           </Box>
         )}
-        {addRemoteError && <Text color="red">⚠ {addRemoteError}</Text>}
-        <Box marginTop={1}>
-          <Text dimColor>Enter Submit · Esc Cancel</Text>
-        </Box>
+        {addRemoteError && <Text color={colors.red}>⚠ {addRemoteError}</Text>}
+        <Text color={colors.grey}>Enter submit · Esc cancel</Text>
         <Menu items={[{ label: 'Cancel', value: 'cancel' }]} onSelect={() => setView('overview')} />
-      </Box>
+      </PushShell>
     );
   }
 
-  // Select Remote View
   if (view === 'selectRemote') {
-    const remoteItems: MenuItem[] = remotes.map(r => ({
-      label: r,
-      value: r,
-    }));
+    const remoteItems: MenuItem[] = remotes.map(r => ({ label: r, value: r }));
     remoteItems.push({ label: 'Cancel', value: '__cancel__' });
-
     return (
-      <Box flexDirection="column" gap={1}>
-        <Text bold color="cyan">
-          Select Remote
-        </Text>
+      <PushShell>
+        <ScreenHeader title="Select Remote" />
         <Menu
           items={remoteItems}
           onSelect={item => {
-            if (item.value !== '__cancel__') {
-              setSelectedRemote(item.value);
-            }
+            if (item.value !== '__cancel__') setSelectedRemote(item.value);
             setView('overview');
           }}
         />
-      </Box>
+      </PushShell>
     );
   }
 
-  // Pushing View
   if (view === 'pushing') {
     return (
-      <Box flexDirection="column" gap={1}>
-        <Text bold color="cyan">
-          Pushing changes...
-        </Text>
-        <Text dimColor>Remote: {selectedRemote}</Text>
-        <Text dimColor>Branch: {targetBranch}</Text>
-        <Box marginTop={1}>
-          <Text color="yellow">Please wait...</Text>
+      <PushShell>
+        <ScreenHeader title="Pushing changes…" />
+        <Box flexDirection="column">
+          <InfoRow label="remote">
+            <Text>{selectedRemote}</Text>
+          </InfoRow>
+          <InfoRow label="branch">
+            <Text>{targetBranch}</Text>
+          </InfoRow>
         </Box>
-      </Box>
+        <Box marginTop={1}>
+          <Text color={colors.yellow}>Please wait…</Text>
+        </Box>
+      </PushShell>
     );
   }
 
-  // Success View
   if (view === 'success') {
     return (
-      <Box flexDirection="column" gap={1}>
-        <Text bold color="green">
+      <PushShell>
+        <Text color={colors.green} bold>
           ✓ Push completed successfully.
         </Text>
         <Text>
@@ -206,16 +197,15 @@ export function PushScreen({
         </Text>
         <Box marginTop={1}>
           <Menu
-            items={[{ label: 'Return to menu', value: 'back' }]}
+            items={[{ label: 'Return to repository', value: 'back' }]}
             onSelect={() => onBack()}
             onCancel={onBack}
           />
         </Box>
-      </Box>
+      </PushShell>
     );
   }
 
-  // Error View
   if (view === 'error' && error) {
     const isRejected = error.title === 'Rejected Push';
     const errorItems: MenuItem[] = [
@@ -223,30 +213,24 @@ export function PushScreen({
       { label: 'Try again', value: 'retry' },
       { label: 'Return to repository', value: 'back' },
     ];
-
     return (
-      <Box flexDirection="column" gap={1}>
+      <PushShell>
         <ErrorDisplay title={error.title} message={error.message} hint={error.suggestion} />
         <Box marginTop={1}>
           <Menu
             items={errorItems}
             onSelect={item => {
-              if (item.value === 'pull' && onGoToPull) {
-                onGoToPull();
-              } else if (item.value === 'retry') {
-                setView('overview');
-              } else {
-                onBack();
-              }
+              if (item.value === 'pull' && onGoToPull) onGoToPull();
+              else if (item.value === 'retry') setView('overview');
+              else onBack();
             }}
             onCancel={onBack}
           />
         </Box>
-      </Box>
+      </PushShell>
     );
   }
 
-  // Overview / Confirmation View
   const aheadText = aheadBehind
     ? aheadBehind.ahead > 0
       ? `${aheadBehind.ahead} commit${aheadBehind.ahead > 1 ? 's' : ''} ahead of ${upstream?.remote}/${upstream?.branch}`
@@ -265,44 +249,33 @@ export function PushScreen({
   ];
 
   return (
-    <Box flexDirection="column" gap={1}>
-      <Text bold color="cyan">
-        Push Changes
-      </Text>
-
-      <Box flexDirection="column">
-        <Text dimColor>Branch:</Text>
-        <Text color="cyan">{targetBranch}</Text>
+    <PushShell>
+      <ScreenHeader title="Push Changes" />
+      <Box flexDirection="column" gap={1} marginBottom={1}>
+        <InfoRow label="branch">
+          <Text color={colors.pink}>{targetBranch}</Text>
+        </InfoRow>
+        <InfoRow label="remote">
+          <Text>{selectedRemote}</Text>
+        </InfoRow>
+        <InfoRow label="status">
+          <Text color={aheadBehind && aheadBehind.ahead > 0 ? colors.green : undefined}>
+            {aheadText}
+          </Text>
+        </InfoRow>
       </Box>
-
-      <Box flexDirection="column">
-        <Text dimColor>Remote:</Text>
-        <Text>{selectedRemote}</Text>
+      <Box marginBottom={1}>
+        <CommandPanel command={commandString} />
       </Box>
-
-      <Box flexDirection="column">
-        <Text dimColor>Status:</Text>
-        <Text color={aheadBehind && aheadBehind.ahead > 0 ? 'green' : undefined}>{aheadText}</Text>
-      </Box>
-
-      <Box flexDirection="column">
-        <Text dimColor>Command:</Text>
-        <Text color="cyan">{commandString}</Text>
-      </Box>
-
       <Menu
         items={menuOptions}
         onSelect={item => {
-          if (item.value === 'push') {
-            void handleExecutePush();
-          } else if (item.value === 'selectRemote') {
-            setView('selectRemote');
-          } else {
-            onBack();
-          }
+          if (item.value === 'push') void handleExecutePush();
+          else if (item.value === 'selectRemote') setView('selectRemote');
+          else onBack();
         }}
         onCancel={onBack}
       />
-    </Box>
+    </PushShell>
   );
 }

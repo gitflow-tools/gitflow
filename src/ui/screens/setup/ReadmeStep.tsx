@@ -3,6 +3,7 @@ import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
 import { Menu } from '../../components/Menu.js';
 import type { MenuItem } from '../../components/Menu.js';
+import { colors } from '../../theme/colors.js';
 import { detectExistingReadme } from '../../../templates/readme.js';
 
 export interface ReadmeStepData {
@@ -100,7 +101,7 @@ export function ReadmeStep({
 
   return (
     <Box flexDirection="column" gap={1}>
-      <Text bold color="cyan">
+      <Text color={colors.pink} bold>
         Step 3/7 — README
       </Text>
 

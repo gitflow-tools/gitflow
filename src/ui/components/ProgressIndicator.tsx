@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Text } from 'ink';
+import { colors } from '../theme/colors.js';
 import type { ExecutionLogEntry } from '../../setup/executor.js';
 
 interface ProgressIndicatorProps {
@@ -26,16 +27,15 @@ export function ProgressIndicator({ logs }: ProgressIndicatorProps): React.React
 
         if (log.status === 'success') {
           prefix = '✓ ';
-          color = 'green';
+          color = colors.green;
         } else if (log.status === 'failed') {
           prefix = '✗ ';
-          color = 'red';
+          color = colors.red;
         } else if (log.status === 'pending') {
           prefix = `${SPINNER_FRAMES[frame]} `;
-          color = 'cyan';
+          color = colors.pink;
         }
 
-        // Clean message if it already starts with checkmark or cross
         let displayMessage = log.message;
         if (displayMessage.startsWith('✓ ') || displayMessage.startsWith('✗ ')) {
           displayMessage = displayMessage.slice(2);
