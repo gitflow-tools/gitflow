@@ -28,8 +28,6 @@ export function ReviewStep({
   const handleSelect = (item: MenuItem): void => {
     if (item.value === 'execute') {
       onExecute();
-    } else if (item.value === 'back') {
-      onBack();
     } else if (item.value === 'cancel') {
       onCancel();
     }
@@ -46,7 +44,6 @@ export function ReviewStep({
       <Menu
         items={[
           { label: 'Execute Setup', value: 'execute' },
-          { label: 'Go Back', value: 'back' },
           { label: 'Cancel', value: 'cancel' },
         ]}
         onSelect={handleSelect}

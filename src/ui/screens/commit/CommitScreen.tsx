@@ -89,13 +89,11 @@ export function CommitScreen({
           <Menu
             items={[
               { label: 'Go to staging', value: 'staging' },
-              { label: 'Back', value: 'back' },
             ]}
             onSelect={item => {
               if (item.value === 'staging') onGoToStaging();
-              else onBack();
             }}
-            onCancel={onBack}
+            onCancel={() => onBack()}
           />
         </Box>
       </CommitShell>
@@ -352,7 +350,6 @@ export function CommitScreen({
 
   if (step === 'success') {
     const successItems: MenuItem[] = [
-      { label: 'Return to repository', value: 'back' },
       { label: 'View status', value: 'status' },
       { label: 'Push changes', value: 'push' },
     ];
@@ -385,13 +382,9 @@ export function CommitScreen({
         <ErrorDisplay title={error.title} message={error.message} hint={error.suggestion} />
         <Box marginTop={1}>
           <Menu
-            items={[
-              { label: 'Try again', value: 'retry' },
-              { label: 'Return to repository', value: 'back' },
-            ]}
+            items={[{ label: 'Try again', value: 'retry' }]}
             onSelect={item => {
               if (item.value === 'retry') setStep('preview');
-              else onBack();
             }}
             onCancel={onBack}
           />

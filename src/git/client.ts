@@ -401,14 +401,14 @@ export async function pushToRemote(
 
 export async function push(
   dir: string,
-  options: { remote: string; branch: string; setUpstream?: boolean },
+  options: { remote: string; branch: string; setUpstream?: boolean; force?: boolean },
 ): Promise<PushResult> {
   const git = createClient(dir);
-  if (options.setUpstream) {
-    await git.push(['-u', options.remote, options.branch]);
-  } else {
-    await git.push([options.remote, options.branch]);
-  }
+  const args: string[] = [];
+  if (options.setUpstream) args.push('-u');
+  if (options.force) args.push('--force-with-lease');
+  args.push(options.remote, options.branch);
+  await git.push(args);
   return {
     success: true,
     remote: options.remote,

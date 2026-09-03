@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Box, Text, useInput } from 'ink';
+import React from 'react';
+import { Box, Text } from 'ink';
 import { Panel } from '../components/layout/Panel.js';
 import { colors } from '../theme/colors.js';
 import type { RepoInfo } from '../../git/types.js';
@@ -11,12 +11,12 @@ interface MainMenuProps {
   isRepo: boolean;
   repoInfo: RepoInfo | null;
   onNavigate: (action: MenuAction) => void;
-  onExit: () => void;
+  selectedIndex: number;
 }
 
 const MENU_ACTIONS: ReadonlyArray<{
   label: string;
-  value: MenuAction | 'exit';
+  value: MenuAction;
   disabled?: boolean;
   warning?: string;
 }> = [
@@ -26,39 +26,13 @@ const MENU_ACTIONS: ReadonlyArray<{
   { label: 'Pull Changes', value: 'pull' },
   { label: 'Push Changes', value: 'push' },
   { label: 'Repository Setup', value: 'init' },
-  { label: 'Exit', value: 'exit' },
 ];
 
-export function MainMenu({ repoInfo, onNavigate, onExit }: MainMenuProps): React.ReactElement {
-  const [selected, setSelected] = useState(0);
-
-  const enabledIndices = MENU_ACTIONS.reduce<number[]>((acc, item, i) => {
-    if (!item.disabled && !['exit'].includes(item.value)) acc.push(i);
-    return acc;
-  }, []);
-  const totalEnabled = enabledIndices.length;
-
-  useInput((input, key) => {
-    if (key.upArrow || input === 'k' || input === 'K') {
-      setSelected(prev => (prev > 0 ? prev - 1 : totalEnabled - 1));
-    } else if (key.downArrow || input === 'j' || input === 'J') {
-      setSelected(prev => (prev < totalEnabled - 1 ? prev + 1 : 0));
-    } else if (key.return) {
-      const item = MENU_ACTIONS[selected];
-      if (item && !item.disabled) {
-        if (item.value === 'exit') {
-          onExit();
-        } else {
-          onNavigate(item.value);
-        }
-      }
-    }
-  });
-
+export function MainMenu({ repoInfo, selectedIndex }: MainMenuProps): React.ReactElement {
   const remotesCount = repoInfo?.remotes.length ?? 0;
+  const clean = repoInfo?.fileStatus.isClean ?? true;
 
   const sideInfo: React.ReactNode[] = [];
-  const clean = repoInfo?.fileStatus.isClean ?? true;
   sideInfo.push(
     <Box key="clean" flexDirection="row">
       <Text color={colors.grey}>working tree: </Text>
@@ -96,8 +70,7 @@ export function MainMenu({ repoInfo, onNavigate, onExit }: MainMenuProps): React
 
         <Box flexDirection="column">
           {MENU_ACTIONS.map((item, index) => {
-            const isSelected = selected === index;
-            const isExit = item.value === 'exit';
+            const isSelected = selectedIndex === index;
 
             return (
               <Box key={item.value} flexDirection="column" paddingX={1}>
@@ -111,7 +84,7 @@ export function MainMenu({ repoInfo, onNavigate, onExit }: MainMenuProps): React
                       <Text color={colors.darkGrey}> </Text>
                     )}
                     <Text
-                      color={isSelected ? colors.white : isExit ? colors.grey : colors.lightGrey}
+                      color={isSelected ? colors.white : colors.lightGrey}
                       bold={isSelected}
                     >
                       {item.label}

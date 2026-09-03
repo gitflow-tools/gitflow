@@ -22,7 +22,7 @@ interface PushScreenProps {
   onGoToPull?: () => void;
 }
 
-type PushView = 'overview' | 'selectRemote' | 'addRemote' | 'pushing' | 'success' | 'error';
+type PushView = 'overview' | 'selectRemote' | 'addRemote' | 'pushing' | 'success' | 'error' | 'confirmForce';
 
 function PushShell({ children }: { children: React.ReactNode }): React.ReactElement {
   return (
@@ -53,14 +53,20 @@ export function PushScreen({
   const hasRemotes = remotes.length > 0;
   const hasUpstream = upstream != null;
   const targetBranch = branch;
-  const commandString = hasUpstream
-    ? `git push ${selectedRemote} ${targetBranch}`
-    : `git push -u ${selectedRemote} ${targetBranch}`;
+  const buildCommandString = (force: boolean): string => {
+    const parts = ['git push'];
+    if (force) parts.push('--force-with-lease');
+    else if (!hasUpstream) parts.push('-u');
+    parts.push(selectedRemote, targetBranch);
+    return parts.join(' ');
+  };
+  const commandString = buildCommandString(false);
+  const forceCommandString = buildCommandString(true);
 
-  const handleExecutePush = async (): Promise<void> => {
+  const handleExecutePush = async (force = false): Promise<void> => {
     setView('pushing');
     try {
-      await push(cwd, { remote: selectedRemote, branch: targetBranch, setUpstream: !hasUpstream });
+      await push(cwd, { remote: selectedRemote, branch: targetBranch, setUpstream: !hasUpstream, force });
       await onRefresh();
       setView('success');
     } catch (err) {
@@ -108,11 +114,9 @@ export function PushScreen({
           <Menu
             items={[
               { label: 'Configure remote', value: 'addRemote' },
-              { label: 'Back', value: 'back' },
             ]}
             onSelect={item => {
               if (item.value === 'addRemote') setView('addRemote');
-              else onBack();
             }}
           />
         </Box>
@@ -167,6 +171,32 @@ export function PushScreen({
     );
   }
 
+  if (view === 'confirmForce') {
+    return (
+      <PushShell>
+        <ScreenHeader title="Confirm Force Push" />
+        <Text color={colors.yellow} bold>
+          ⚠ Force push will overwrite remote history.
+        </Text>
+        <Box marginY={1}>
+          <Text>This will use --force-with-lease which is safer than --force, but will still reject if the remote branch has been updated by someone else.</Text>
+        </Box>
+        <Box marginBottom={1}>
+          <CommandPanel command={forceCommandString} />
+        </Box>
+        <Menu
+          items={[
+            { label: 'Force push', value: 'force' },
+          ]}
+          onSelect={item => {
+            if (item.value === 'force') void handleExecutePush(true);
+          }}
+          onCancel={() => setView('overview')}
+        />
+      </PushShell>
+    );
+  }
+
   if (view === 'pushing') {
     return (
       <PushShell>
@@ -195,13 +225,6 @@ export function PushScreen({
         <Text>
           {targetBranch} -&gt; {selectedRemote}/{targetBranch}
         </Text>
-        <Box marginTop={1}>
-          <Menu
-            items={[{ label: 'Return to repository', value: 'back' }]}
-            onSelect={() => onBack()}
-            onCancel={onBack}
-          />
-        </Box>
       </PushShell>
     );
   }
@@ -211,7 +234,6 @@ export function PushScreen({
     const errorItems: MenuItem[] = [
       ...(isRejected && onGoToPull ? [{ label: 'Pull latest changes', value: 'pull' }] : []),
       { label: 'Try again', value: 'retry' },
-      { label: 'Return to repository', value: 'back' },
     ];
     return (
       <PushShell>
@@ -222,7 +244,6 @@ export function PushScreen({
             onSelect={item => {
               if (item.value === 'pull' && onGoToPull) onGoToPull();
               else if (item.value === 'retry') setView('overview');
-              else onBack();
             }}
             onCancel={onBack}
           />
@@ -244,8 +265,11 @@ export function PushScreen({
         : `Push ${targetBranch} to ${selectedRemote}/${targetBranch}`,
       value: 'push',
     },
+    {
+      label: 'Force push',
+      value: 'force',
+    },
     ...(remotes.length > 1 ? [{ label: 'Select remote', value: 'selectRemote' }] : []),
-    { label: 'Cancel', value: 'cancel' },
   ];
 
   return (
@@ -271,8 +295,8 @@ export function PushScreen({
         items={menuOptions}
         onSelect={item => {
           if (item.value === 'push') void handleExecutePush();
+          else if (item.value === 'force') setView('confirmForce');
           else if (item.value === 'selectRemote') setView('selectRemote');
-          else onBack();
         }}
         onCancel={onBack}
       />

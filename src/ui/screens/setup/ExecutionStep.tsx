@@ -10,7 +10,6 @@ import type { SetupPlan } from '../../../setup/types.js';
 interface ExecutionStepProps {
   plan: SetupPlan;
   onComplete: () => void;
-  onBackToReview: () => void;
   onCancel: () => void;
 }
 
@@ -19,7 +18,6 @@ type ExecutionPhase = 'executing' | 'success' | 'failed';
 export function ExecutionStep({
   plan,
   onComplete,
-  onBackToReview,
   onCancel,
 }: ExecutionStepProps): React.ReactElement {
   const [phase, setPhase] = useState<ExecutionPhase>('executing');
@@ -125,13 +123,10 @@ export function ExecutionStep({
 
           <Menu
             items={[
-              { label: 'Go Back to Review', value: 'back' },
               { label: 'Cancel', value: 'cancel' },
             ]}
             onSelect={item => {
-              if (item.value === 'back') {
-                onBackToReview();
-              } else {
+              if (item.value === 'cancel') {
                 onCancel();
               }
             }}

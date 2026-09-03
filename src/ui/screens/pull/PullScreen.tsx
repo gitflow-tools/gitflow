@@ -72,7 +72,6 @@ export function PullScreen({
           No remote configured.
         </Text>
         <Text>Add a remote repository before pulling changes.</Text>
-        <Menu items={[{ label: 'Back', value: 'back' }]} onSelect={() => onBack()} />
       </PullShell>
     );
   }
@@ -81,7 +80,6 @@ export function PullScreen({
     const dirtyItems: MenuItem[] = [
       ...(onGoToStaging ? [{ label: 'View local changes', value: 'staging' }] : []),
       { label: 'Continue anyway', value: 'continue' },
-      { label: 'Cancel', value: 'cancel' },
     ];
     return (
       <PullShell>
@@ -101,8 +99,8 @@ export function PullScreen({
           onSelect={item => {
             if (item.value === 'staging' && onGoToStaging) onGoToStaging();
             else if (item.value === 'continue') setView('overview');
-            else onBack();
           }}
+          onCancel={onBack}
         />
       </PullShell>
     );
@@ -155,10 +153,6 @@ export function PullScreen({
             <Text>3. Complete the merge:</Text>
             <Text color={colors.orange}> git commit</Text>
           </Box>
-          <Menu
-            items={[{ label: 'Return to repository', value: 'back' }]}
-            onSelect={() => onBack()}
-          />
         </PullShell>
       );
     }
@@ -172,12 +166,6 @@ export function PullScreen({
           <Text color={colors.grey}>
             Branch {branch} is synchronized with {upstreamDisplay}.
           </Text>
-          <Box marginTop={1}>
-            <Menu
-              items={[{ label: 'Return to repository', value: 'back' }]}
-              onSelect={() => onBack()}
-            />
-          </Box>
         </PullShell>
       );
     }
@@ -195,11 +183,6 @@ export function PullScreen({
           <Text color={colors.green}> • +{pullResult.insertions} insertions</Text>
           <Text color={colors.red}> • -{pullResult.deletions} deletions</Text>
         </Box>
-        <Menu
-          items={[{ label: 'Return to repository', value: 'back' }]}
-          onSelect={() => onBack()}
-          onCancel={onBack}
-        />
       </PullShell>
     );
   }
@@ -210,13 +193,9 @@ export function PullScreen({
         <ErrorDisplay title={error.title} message={error.message} hint={error.suggestion} />
         <Box marginTop={1}>
           <Menu
-            items={[
-              { label: 'Try again', value: 'retry' },
-              { label: 'Return to repository', value: 'back' },
-            ]}
+            items={[{ label: 'Try again', value: 'retry' }]}
             onSelect={item => {
               if (item.value === 'retry') setView('overview');
-              else onBack();
             }}
             onCancel={onBack}
           />
@@ -242,11 +221,9 @@ export function PullScreen({
       <Menu
         items={[
           { label: 'Pull latest changes', value: 'pull' },
-          { label: 'Cancel', value: 'cancel' },
         ]}
         onSelect={item => {
           if (item.value === 'pull') void handleExecutePull();
-          else onBack();
         }}
         onCancel={onBack}
       />

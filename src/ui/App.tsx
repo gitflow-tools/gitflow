@@ -63,9 +63,7 @@ export function App({
   const [screen, setScreen] = useState<AppScreen>('menu');
   const [isRepo, setIsRepo] = useState(initialIsRepo);
   const [repoInfo, setRepoInfo] = useState<RepoInfo | null>(initialRepoInfo);
-  const [sidebarIndex, setSidebarIndex] = useState(() =>
-    SIDEBAR_ITEMS.findIndex(i => i.value === 'menu'),
-  );
+  const [sidebarIndex, setSidebarIndex] = useState(0);
 
   const termWidth = stdout?.columns ?? 0;
   const termHeight = stdout?.rows ?? 0;
@@ -87,22 +85,8 @@ export function App({
     }
   }, [cwd]);
 
-  const screenToSidebarIndex = (s: AppScreen): number => {
-    const map: Record<AppScreen, number> = {
-      menu: 0,
-      status: 1,
-      staging: 2,
-      commit: 3,
-      pull: 4,
-      push: 5,
-      initWizard: 6,
-    };
-    return map[s] ?? 0;
-  };
-
   const navigateTo = useCallback((s: AppScreen): void => {
     setScreen(s);
-    setSidebarIndex(screenToSidebarIndex(s));
   }, []);
 
   const handleNavigate = useCallback(
@@ -117,64 +101,57 @@ export function App({
   );
 
   const handleBack = useCallback((): void => {
-    navigateTo('menu');
-  }, [navigateTo]);
+    setScreen('menu');
+  }, []);
 
   if (isTooSmall) {
     return <MinimumSize columns={termWidth} rows={termHeight} />;
   }
 
-  useInput((input, key) => {
-    const isMenuScreen = screen === 'menu';
-    const isStatusScreen = screen === 'status';
-    const isStagingScreen = screen === 'staging';
-    const isPullScreen = screen === "pull";
-    const _isPushScreen = screen === "push";
-    const isCommitScreen = screen === 'commit';
+  const isMenuScreen = screen === 'menu';
 
-    // q: quit only from main menu screen
-    if (input === 'q' && !isStatusScreen && !isStagingScreen && !isCommitScreen && !isPullScreen && isMenuScreen) {
+  useInput((input, key) => {
+    // q: quit only from main menu
+    if (input === 'q' && isMenuScreen) {
       exit();
       return;
     }
 
-    // Escape: context-aware back/cancel
+    // Escape: always goes back to menu from sub-screens
     if (key.escape) {
-      if (isStatusScreen) {
-        navigateTo('menu');
-      } else if (isMenuScreen) {
-        // no-op on main menu
-      } else if (isCommitScreen) {
-        navigateTo('status');
-      } else {
+      if (!isMenuScreen) {
         navigateTo('menu');
       }
       return;
     }
 
-    // Help: open help from main menu
+    // ?: help from main menu
     if (input === '?' && isMenuScreen) {
       navigateTo('initWizard');
       return;
     }
 
-    // j / k: move sidebar selection (only when not on menu screen)
-    if (!isMenuScreen) {
+    // ↑ / ↓ / j / k / Enter: sidebar navigation (only on main menu)
+    if (isMenuScreen) {
       if (key.downArrow || input === 'j' || input === 'J') {
-        const next = sidebarIndex < SIDEBAR_ITEMS.length - 1 ? sidebarIndex + 1 : 0;
-        const item = SIDEBAR_ITEMS[next];
-        if (item) navigateTo(item.value as AppScreen);
+        setSidebarIndex(prev => {
+          const next = prev < SIDEBAR_ITEMS.length - 1 ? prev + 1 : 0;
+          return next;
+        });
       } else if (key.upArrow || input === 'k' || input === 'K') {
-        const next = sidebarIndex > 0 ? sidebarIndex - 1 : SIDEBAR_ITEMS.length - 1;
-        const item = SIDEBAR_ITEMS[next];
-        if (item) navigateTo(item.value as AppScreen);
+        setSidebarIndex(prev => {
+          const next = prev > 0 ? prev - 1 : SIDEBAR_ITEMS.length - 1;
+          return next;
+        });
+      } else if (key.return) {
+        const item = SIDEBAR_ITEMS[sidebarIndex];
+        if (item) {
+          navigateTo(item.value as AppScreen);
+        }
       }
     }
-
-    // Enter: select (handled by respective screens via their own mechanisms)
-    if (key.return && isMenuScreen) {
-      // Enter on menu is handled by MainMenu's useInput
-    }
+    // On sub-screens: ↑ / ↓ / Enter / Space are NOT handled here.
+    // The sub-screen's own components handle them via their own useInput.
   });
 
   const navItems: NavItem[] = SIDEBAR_ITEMS.map(item => {
@@ -199,7 +176,7 @@ export function App({
         isRepo={isRepo}
         repoInfo={repoInfo}
         onNavigate={handleNavigate}
-        onExit={exit}
+        selectedIndex={sidebarIndex}
       />
     ),
     status:

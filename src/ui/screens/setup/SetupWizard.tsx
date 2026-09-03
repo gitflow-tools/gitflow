@@ -143,7 +143,6 @@ export function SetupWizard({ cwd, onComplete, onCancel }: SetupWizardProps): Re
           <ExecutionStep
             plan={plan}
             onComplete={onComplete}
-            onBackToReview={() => setState(prev => ({ ...prev, step: 7 }))}
             onCancel={onCancel}
           />
         )}

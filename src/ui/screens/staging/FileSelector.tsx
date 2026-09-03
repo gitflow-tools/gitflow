@@ -23,22 +23,15 @@ export function FileSelector({
 
   useInput(
     (input, key) => {
-      if (
-        key.escape ||
-        input === 'q' ||
-        input === 'Q' ||
-        input === '\u001b' ||
-        input === '\x1b' ||
-        (input != null && input.charCodeAt(0) === 27)
-      ) {
+      if (key.escape) {
         onCancel();
         return;
       }
-      if (key.upArrow) {
+      if (key.upArrow || input === 'k' || input === 'K') {
         setCursorIndex(prev => (prev > 0 ? prev - 1 : files.length - 1));
         return;
       }
-      if (key.downArrow) {
+      if (key.downArrow || input === 'j' || input === 'J') {
         setCursorIndex(prev => (prev < files.length - 1 ? prev + 1 : 0));
         return;
       }
