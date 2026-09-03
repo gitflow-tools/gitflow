@@ -12,6 +12,7 @@ import { PullScreen } from './screens/pull/PullScreen.js';
 import { detectRepository, getRepoStatus } from '../git/repository.js';
 import type { RepoInfo } from '../git/types.js';
 import type { MenuAction } from './screens/MainMenu.js';
+import { MENU_ACTIONS } from './screens/MainMenu.js';
 
 export type AppScreen = 'menu' | 'status' | 'staging' | 'commit' | 'push' | 'pull' | 'initWizard';
 
@@ -19,6 +20,8 @@ interface AppProps {
   cwd: string;
   isRepo: boolean;
   repoInfo: RepoInfo | null;
+  termWidth: number;
+  termHeight: number;
 }
 
 const SIDEBAR_ITEMS = [
@@ -30,6 +33,16 @@ const SIDEBAR_ITEMS = [
   { label: 'Push', value: 'push' },
   { label: 'Settings', value: 'initWizard' },
 ] as const;
+
+// Semantic mapping: workspace action value → sidebar item value
+const WORKSPACE_TO_SIDEBAR: Record<string, string> = {
+  status: 'status',
+  staging: 'staging',
+  commit: 'commit',
+  pull: 'pull',
+  push: 'push',
+  init: 'initWizard',
+};
 
 function MinimumSize({ columns, rows }: { columns: number; rows: number }): React.ReactElement {
   return (
@@ -57,16 +70,18 @@ export function App({
   cwd,
   isRepo: initialIsRepo,
   repoInfo: initialRepoInfo,
+  termWidth: propTermWidth,
+  termHeight: propTermHeight,
 }: AppProps): React.ReactElement {
   const { exit } = useApp();
   const { stdout } = useStdout();
   const [screen, setScreen] = useState<AppScreen>('menu');
   const [isRepo, setIsRepo] = useState(initialIsRepo);
   const [repoInfo, setRepoInfo] = useState<RepoInfo | null>(initialRepoInfo);
-  const [sidebarIndex, setSidebarIndex] = useState(0);
+  const [workspaceIndex, setWorkspaceIndex] = useState(0);
 
-  const termWidth = stdout?.columns ?? 0;
-  const termHeight = stdout?.rows ?? 0;
+  const termWidth = propTermWidth || stdout?.columns || 0;
+  const termHeight = propTermHeight || stdout?.rows || 0;
 
   const isTooSmall = termWidth > 0 && termHeight > 0 && (termWidth < 60 || termHeight < 20);
 
@@ -110,6 +125,23 @@ export function App({
 
   const isMenuScreen = screen === 'menu';
 
+  // Derive sidebar active index from workspace selection (root) or screen (sub-screens)
+  const sidebarActiveIndex = (() => {
+    if (isMenuScreen) {
+      const action = MENU_ACTIONS[workspaceIndex];
+      if (action) {
+        const sidebarValue = WORKSPACE_TO_SIDEBAR[action.value];
+        if (sidebarValue) {
+          const idx = SIDEBAR_ITEMS.findIndex(item => item.value === sidebarValue);
+          if (idx !== -1) return idx;
+        }
+      }
+      return 0;
+    }
+    const idx = SIDEBAR_ITEMS.findIndex(item => item.value === screen);
+    return idx !== -1 ? idx : 0;
+  })();
+
   useInput((input, key) => {
     // q: quit only from main menu
     if (input === 'q' && isMenuScreen) {
@@ -131,22 +163,22 @@ export function App({
       return;
     }
 
-    // ↑ / ↓ / j / k / Enter: sidebar navigation (only on main menu)
+    // On main menu: arrows move workspace selection, Enter navigates
     if (isMenuScreen) {
       if (key.downArrow || input === 'j' || input === 'J') {
-        setSidebarIndex(prev => {
-          const next = prev < SIDEBAR_ITEMS.length - 1 ? prev + 1 : 0;
+        setWorkspaceIndex(prev => {
+          const next = prev < MENU_ACTIONS.length - 1 ? prev + 1 : 0;
           return next;
         });
       } else if (key.upArrow || input === 'k' || input === 'K') {
-        setSidebarIndex(prev => {
-          const next = prev > 0 ? prev - 1 : SIDEBAR_ITEMS.length - 1;
+        setWorkspaceIndex(prev => {
+          const next = prev > 0 ? prev - 1 : MENU_ACTIONS.length - 1;
           return next;
         });
       } else if (key.return) {
-        const item = SIDEBAR_ITEMS[sidebarIndex];
-        if (item) {
-          navigateTo(item.value as AppScreen);
+        const action = MENU_ACTIONS[workspaceIndex];
+        if (action) {
+          handleNavigate(action.value);
         }
       }
     }
@@ -176,7 +208,7 @@ export function App({
         isRepo={isRepo}
         repoInfo={repoInfo}
         onNavigate={handleNavigate}
-        selectedIndex={sidebarIndex}
+        selectedIndex={workspaceIndex}
       />
     ),
     status:
@@ -263,10 +295,12 @@ export function App({
       repoInfo={repoInfo}
       isRepo={isRepo}
       sidebar={
-        <Sidebar items={navItems} selectedIndex={sidebarIndex} width={sidebarWidth} />
+        <Sidebar items={navItems} selectedIndex={0} activeIndex={sidebarActiveIndex} width={sidebarWidth} />
       }
       sidebarWidth={sidebarWidth}
       footerShortcuts={footerShortcuts}
+      termWidth={termWidth}
+      termHeight={termHeight}
     >
       <Box flexDirection="column" flexGrow={1} paddingX={1} paddingTop={1} overflow="hidden">
         {navByScreen[screen]}

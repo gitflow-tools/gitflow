@@ -3,6 +3,8 @@ import { Box, Text } from 'ink';
 
 interface SplashScreenProps {
   onComplete: () => void;
+  termWidth: number;
+  termHeight: number;
 }
 
 type SplashPhase = 'logo' | 'init' | 'detect' | 'ready';
@@ -23,7 +25,7 @@ const PHASE_MESSAGES: Record<SplashPhase, string> = {
   ready: 'ready',
 };
 
-export function SplashScreen({ onComplete }: SplashScreenProps): React.ReactElement {
+export function SplashScreen({ onComplete, termWidth, termHeight }: SplashScreenProps): React.ReactElement {
   const [phase, setPhase] = useState<SplashPhase>('logo');
   const [visibleLines, setVisibleLines] = useState(0);
   const [dotFrame, setDotFrame] = useState(0);
@@ -63,8 +65,8 @@ export function SplashScreen({ onComplete }: SplashScreenProps): React.ReactElem
       flexDirection="column"
       alignItems="center"
       justifyContent="center"
-      width="100%"
-      height="100%"
+      width={termWidth}
+      height={termHeight}
     >
       <Box flexDirection="column" alignItems="center">
         {BRANCH_ART.slice(0, visibleLines).map((line, i) => (

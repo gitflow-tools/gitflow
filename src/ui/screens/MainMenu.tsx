@@ -14,7 +14,7 @@ interface MainMenuProps {
   selectedIndex: number;
 }
 
-const MENU_ACTIONS: ReadonlyArray<{
+export const MENU_ACTIONS: ReadonlyArray<{
   label: string;
   value: MenuAction;
   disabled?: boolean;

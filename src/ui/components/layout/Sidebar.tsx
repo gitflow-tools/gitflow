@@ -13,14 +13,16 @@ export interface NavItem {
 interface SidebarProps {
   items: ReadonlyArray<NavItem>;
   selectedIndex: number;
+  activeIndex?: number;
   width: number;
 }
 
-export function Sidebar({ items, selectedIndex, width }: SidebarProps): React.ReactElement {
+export function Sidebar({ items, selectedIndex, activeIndex, width }: SidebarProps): React.ReactElement {
+  const highlightIndex = activeIndex ?? selectedIndex;
   return (
     <Box width={width} flexDirection="column" flexShrink={0} height="100%">
       {items.map((item, index) => {
-        const isSelected = index === selectedIndex;
+        const isSelected = index === highlightIndex;
         const isDisabled = item.disabled === true;
 
         return (

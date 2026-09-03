@@ -50,7 +50,13 @@ async function main(): Promise<void> {
   hideCursor();
   clearScreen();
 
-  render(React.createElement(Bootstrap, { cwd: process.cwd() }));
+  render(
+    React.createElement(Bootstrap, {
+      cwd: process.cwd(),
+      termWidth: process.stdout.columns ?? 80,
+      termHeight: process.stdout.rows ?? 24,
+    }),
+  );
 }
 
 main().catch(err => {

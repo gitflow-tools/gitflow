@@ -13,6 +13,8 @@ interface LayoutProps {
   footerShortcuts: ReadonlyArray<{ key: string; label: string }>;
   children: React.ReactNode;
   showHeader?: boolean;
+  termWidth?: number;
+  termHeight?: number;
 }
 
 export function FullscreenLayout({
@@ -24,9 +26,11 @@ export function FullscreenLayout({
   footerShortcuts,
   children,
   showHeader = true,
+  termWidth,
+  termHeight,
 }: LayoutProps): React.ReactElement {
   return (
-    <Box flexDirection="column" width="100%" height="100%">
+    <Box flexDirection="column" width={termWidth ?? '100%'} height={termHeight ?? '100%'}>
       {showHeader && (
         <HeaderBar cwd={cwd} repoInfo={repoInfo} isRepo={isRepo} />
       )}
@@ -41,7 +45,7 @@ export function FullscreenLayout({
             borderColor="gray"
             paddingX={0}
             paddingY={0}
-            height="100%"
+            height={termHeight != null ? termHeight - 2 : '100%'}
           >
             {sidebar}
           </Box>

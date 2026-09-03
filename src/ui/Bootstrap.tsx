@@ -6,9 +6,11 @@ import type { RepoInfo } from '../git/types.js';
 
 interface BootstrapProps {
   cwd: string;
+  termWidth: number;
+  termHeight: number;
 }
 
-export function Bootstrap({ cwd }: BootstrapProps): React.ReactElement {
+export function Bootstrap({ cwd, termWidth, termHeight }: BootstrapProps): React.ReactElement {
   const [showSplash, setShowSplash] = useState(true);
   const [isRepo, setIsRepo] = useState(false);
   const [repoInfo, setRepoInfo] = useState<RepoInfo | null>(null);
@@ -38,8 +40,8 @@ export function Bootstrap({ cwd }: BootstrapProps): React.ReactElement {
   }, [cwd, minimumSplashDuration]);
 
   if (showSplash) {
-    return <SplashScreen onComplete={handleSplashComplete} />;
+    return <SplashScreen onComplete={handleSplashComplete} termWidth={termWidth} termHeight={termHeight} />;
   }
 
-  return <App cwd={cwd} isRepo={isRepo} repoInfo={repoInfo} />;
+  return <App cwd={cwd} isRepo={isRepo} repoInfo={repoInfo} termWidth={termWidth} termHeight={termHeight} />;
 }
